@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+        {% block title %}
+            {% if title %}
+                <title>Flask - {{ title }}</title>
+            {% else %}
+                <title>Flask</title>
+            {% endif %}
+        {% endblock title %}
+    </head>
+
+    <body>
+        <div class="wrapper">
+
+        {% block header %}
+        <header class="header">
+            <div class="logo">
+                <img src="{{ url_for('static', filename='img/flask.png') }}" alt="logo">
+            </div>
+
+            Web parser for shops
+        </header>
+        {% endblock header %}
+
+        {% block main_page %}
+        <!--
+        <div class="content")>
+            123
+        </div>
+        -->
+        {% endblock main_page %}
+
+        {% block database_form %}
+        {% endblock database_form %}
+
+        {% block category_form %}
+        {% endblock category_form %}
+
+        {% block interact_db %}
+        {% endblock interact_db %}
+
+        {% block show_category_links %}
+        {% endblock show_category_links %}
+
+        {% block product_plotter %}
+        {% endblock product_plotter %}
+
+        {% block footer %}
+        <footer class="footer">
+            Supported shops: ozon, citilink
+        </footer>
+        {% endblock footer %}
+
+        </div>
+    </body>
+
+</html>
