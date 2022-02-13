@@ -1,37 +1,50 @@
 {% extends 'layout.html' %}
 
 {% block database_form %}
-<form>
+<form method="POST">
     <label for="db_name">Create new database:</label>
     <input type="text" id="db_name" name="db_name">
-    <input type="submit" name="create_db" value="Create"><br>
+    <input type="submit" value="Create">
+    {% if info_message %} 
+        {{ info_message }} 
+    {% endif %}
+    <br>
+</form>
 
+<form method="POST">
     <label>Selected database:</label>
     <select>
+        {% if databases_list %}
+            {% for db in databases_list %}
+                <option>{{ db }}</option>
+            {% endfor %}
+        {% endif %}
     </select>
-    <input type="submit" name="save_db" value="Download database">
+    <input type="submit" value="Download database">
 </form>
 {% endblock database_form %}
 
 {% block category_form %}
-<form>
+<form method="POST">
     <label for="category_name">Add new category (to selected DB):</label>
     <input type="text" id="category_name" name="category_name">
-    <input type="submit" name="add_category" value="Add"><br>
+    <input type="submit" value="Add"><br>
 </form>
 {% endblock category_form %}
 
 {% block product_plotter %}
     <div class="plotters">
         <div class="product1">
-            <label>Selected category:</label>
-            <select>
-            </select><br>
-            <label for="category_name">Add new link (to selected category):</label>
-            <input type="text" id="link_name" name="link_name">
-            <input type="submit" name="add_link" value="Add"><br>
-            <input type="submit" name="sync_db" value="Synchronize links">
-            <input type="submit" name="links" value="Show links in current category">
+            <form method="POST">
+                <label>Selected category:</label>
+                <select>
+                </select><br>
+                <label for="category_name">Add new link (to selected category):</label>
+                <input type="text" id="link_name" name="link_name">
+                <input type="submit" name="add_link_left_cat" value="Add"><br>
+                <input type="submit" name="sync_links_left_cat" value="Synchronize links">
+                <input type="submit" name="show_left_links" value="Show links in current category">
+            </form>
 
         <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-2.4.2.min.js"></script>
         <script type="text/javascript">
@@ -82,14 +95,16 @@
         </div> <!-- product1 -->
 
         <div class="product2">
-            <label>Selected category:</label>
-            <select>
-            </select><br>
-            <label for="category_name">Add new link (to selected category):</label>
-            <input type="text" id="link_name" name="link_name">
-            <input type="submit" name="add_link" value="Add"><br>
-            <input type="submit" name="sync_db" value="Synchronize links">
-            <input type="submit" name="links" value="Show links in current category">
+            <form method="POST">
+                <label>Selected category:</label>
+                <select>
+                </select><br>
+                <label for="category_name">Add new link (to selected category):</label>
+                <input type="text" id="link_name" name="link_name">
+                <input type="submit" name="add_link_right_cat" value="Add"><br>
+                <input type="submit" name="sync_links_right_cat" value="Synchronize links">
+                <input type="submit" name="show_right_links" value="Show links in current category">
+            </form>
 
         <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-2.4.2.min.js"></script>
         <script type="text/javascript">
