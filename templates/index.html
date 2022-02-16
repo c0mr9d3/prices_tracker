@@ -3,7 +3,7 @@
 {% block database_form %}
 <form onsubmit="check_db_name(this)" method="POST">
     <label for="db_name">Create new database:</label>
-    <input type="text" id="db_name" name="db_name">
+    <input type="text" name="db_name">
     <input type="submit" value="Create">
     <br>
 </form>
@@ -24,7 +24,7 @@
 {% block category_form %}
 <form onsubmit="check_category_name(this)" method="POST">
     <label for="category_name">Add new category (to selected DB):</label>
-    <input type="text" id="category_name" name="category_name">
+    <input type="text" name="category_name">
     <input type="submit" value="Add"><br>
 </form>
 {% endblock category_form %}

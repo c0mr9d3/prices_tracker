@@ -45,4 +45,6 @@ def main_page():
             title='Main', databases_list=databases_list)
 
 if __name__ == '__main__':
+    if not os.path.isdir('databases'):
+        os.mkdir('databases')
     app.run(debug=True, host='0.0.0.0')
