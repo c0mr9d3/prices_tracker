@@ -99,5 +99,3 @@ class XlsDB:
     def refresh_book(self):
         self.read_stream = xlrd.open_workbook(self.db_filename)
 
-#db = XlsDB()
-#db.add_info('Vcardss', 'shop4', 'product3', 'price10')

@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 import random, re, os
-from flask import Flask, render_template, request
+from markupsafe import Markup
+from flask import Flask, render_template, request, redirect, url_for
 
 app = Flask(__name__)
 CURRENT_DIR = os.getcwd()
 
 def check_names_db_cat(name):
-    if name and len(name) <= 100:
+    if name and len(name) <= 40:
         match_res = re.match('\w+', name)
         if match_res and match_res.endpos == match_res.end():
             return True
@@ -19,30 +20,29 @@ def show_databases():
 
     if os.path.isdir(databases_dir):
         for database in os.listdir(databases_dir):
-            db_list.append(database)
+            if '.xls' in database:
+                db_list.append(database[:-4])
 
     return db_list
 
 @app.route('/', methods=['GET', 'POST'])
 def main_page():
-    info_message = ''
     databases_list = show_databases()
 
     if request.method == 'POST':
         values_dict = request.values.to_dict()
         if 'db_name' in values_dict:
             if check_names_db_cat(values_dict['db_name']):
-                info_message = 'Database %s was created' % values_dict['db_name']
-                ###################################### Create and define main database
-            else:
-                info_message = 'Error in database name: name may contain alphabet and numbers symbols. Also name length must be <= 100 symbols'
+                filename = CURRENT_DIR + '/databases/' + values_dict['db_name'] + '.xls' 
+                if not os.path.isfile(filename):
+                    open(filename, 'w').close()
 
-        #print(dir(request))
-        #print(dir(request.values))
+            return redirect('/')
+
         #print(request.values.to_dict())
         #print(request.form.get('db_name'))
     return render_template('index.html', \
-            title='Main', info_message=info_message, databases_list=databases_list)
+            title='Main', databases_list=databases_list)
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0')

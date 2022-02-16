@@ -10,7 +10,7 @@ html, body {
 .logo img {
     float: left;
     margin-left: 80px;
-    width: 50px;
+    width: 60px;
 }
 
 .wrapper {
@@ -23,7 +23,7 @@ html, body {
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 50px;
+    height: 70px;
     background-color: aqua;
 }
 

@@ -1,13 +1,10 @@
 {% extends 'layout.html' %}
 
 {% block database_form %}
-<form method="POST">
+<form onsubmit="check_db_name(this)" method="POST">
     <label for="db_name">Create new database:</label>
     <input type="text" id="db_name" name="db_name">
     <input type="submit" value="Create">
-    {% if info_message %} 
-        {{ info_message }} 
-    {% endif %}
     <br>
 </form>
 
@@ -25,7 +22,7 @@
 {% endblock database_form %}
 
 {% block category_form %}
-<form method="POST">
+<form onsubmit="check_category_name(this)" method="POST">
     <label for="category_name">Add new category (to selected DB):</label>
     <input type="text" id="category_name" name="category_name">
     <input type="submit" value="Add"><br>
