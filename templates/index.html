@@ -10,14 +10,22 @@
 
 <form>
     <label>Selected database:</label>
-    <select id="selected_db">
+    <select id="selected_db" onchange="send_selected_db();">
+        <option disabled selected value> -- select db -- </option>
+        {% if selected_db %}
+            <option selected value={{ selected_db }}>{{ selected_db }}</option>
+        {% endif %}
+
         {% if databases_list %}
             {% for db in databases_list %}
-                <option value={{ db }}>{{ db }}</option>
+                {% if db != selected_db %}
+                    <option value={{ db }}>{{ db }}</option>
+                {% endif %}
             {% endfor %}
         {% endif %}
     </select>
     <input onclick="download_selected_db()" type="submit" value="Download database">
+    <input onclick="delete_selected_db()" type="submit" value="Delete database">
 </form>
 {% endblock database_form %}
 

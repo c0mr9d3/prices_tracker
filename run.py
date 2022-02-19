@@ -3,10 +3,11 @@ import random, re, os
 from sites_parser import tracker
 from markupsafe import Markup
 from flask import Flask, render_template, request, redirect
-from flask import send_file, send_from_directory
+from flask import send_from_directory
 
 app = Flask(__name__)
 CURRENT_DIR = os.getcwd()
+selected_db_name = ''
 
 def check_names_db_cat(name):
     if name and len(name) <= 40:
@@ -33,22 +34,36 @@ def download(filename):
 
 @app.route('/', methods=['GET', 'POST'])
 def main_page():
+    global selected_db_name
     databases_list = show_databases()
 
     if request.method == 'POST':
         values_dict = request.values.to_dict()
+        #print(dir(request))
+        print(request.values.to_dict())
         if 'db_name' in values_dict:
             if check_names_db_cat(values_dict['db_name']):
                 filename = CURRENT_DIR + '/databases/' + values_dict['db_name'] + '.xls' 
                 if not os.path.isfile(filename):
                     open(filename, 'w').close()
+        elif 'selected_db' in values_dict:
+            if os.path.isfile(CURRENT_DIR + '/databases/' + values_dict['selected_db'] + '.xls'):
+                selected_db_name = values_dict['selected_db']
+            else:
+                selected_db_name = ''
+        elif 'remove_db' in values_dict:
+            os.remove(CURRENT_DIR + '/databases/' + values_dict['remove_db'] + '.xls')
+            selected_db_name = ''
+            return render_template('index.html', \
+                title='Main', selected_db=selected_db_name, \
+                databases_list=databases_list, supported_sites=tracker.SUPPORTED_SITES)
+        
+        return redirect('/')
 
-            return redirect('/')
-
-        #print(request.values.to_dict())
         #print(request.form.get('db_name'))
     return render_template('index.html', \
-            title='Main', databases_list=databases_list, supported_sites=tracker.SUPPORTED_SITES)
+            title='Main', selected_db=selected_db_name, \
+            databases_list=databases_list, supported_sites=tracker.SUPPORTED_SITES)
 
 if __name__ == '__main__':
     if not os.path.isdir('databases'):
