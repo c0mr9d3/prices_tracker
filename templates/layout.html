@@ -14,6 +14,7 @@
 
     <body>
         <script src="{{ url_for('static', filename='js/check_names.js') }}"></script>
+        <script src="{{ url_for('static', filename='js/download_selected_db.js') }}"></script>
         <div class="wrapper">
 
         {% block header %}
@@ -43,7 +44,7 @@
 
         {% block footer %}
         <footer class="footer">
-            Supported shops: ozon, citilink
+            Supported sites: {{ supported_sites | join(", ") }}
         </footer>
         {% endblock footer %}
 

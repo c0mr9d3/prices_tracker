@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 import random, re, os
+from sites_parser import tracker
 from markupsafe import Markup
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect
+from flask import send_file, send_from_directory
 
 app = Flask(__name__)
 CURRENT_DIR = os.getcwd()
@@ -25,6 +27,10 @@ def show_databases():
 
     return db_list
 
+@app.route('/databases/<path:filename>')
+def download(filename):
+    return send_from_directory(path=CURRENT_DIR, directory='databases/', filename=filename)
+
 @app.route('/', methods=['GET', 'POST'])
 def main_page():
     databases_list = show_databases()
@@ -42,7 +48,7 @@ def main_page():
         #print(request.values.to_dict())
         #print(request.form.get('db_name'))
     return render_template('index.html', \
-            title='Main', databases_list=databases_list)
+            title='Main', databases_list=databases_list, supported_sites=tracker.SUPPORTED_SITES)
 
 if __name__ == '__main__':
     if not os.path.isdir('databases'):

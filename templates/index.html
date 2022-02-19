@@ -8,16 +8,16 @@
     <br>
 </form>
 
-<form method="POST">
+<form>
     <label>Selected database:</label>
-    <select>
+    <select id="selected_db">
         {% if databases_list %}
             {% for db in databases_list %}
-                <option>{{ db }}</option>
+                <option value={{ db }}>{{ db }}</option>
             {% endfor %}
         {% endif %}
     </select>
-    <input type="submit" value="Download database">
+    <input onclick="download_selected_db()" type="submit" value="Download database">
 </form>
 {% endblock database_form %}
 

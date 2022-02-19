@@ -28,3 +28,10 @@ function check_category_name(input_obj)
         check_name(input_obj.category_name.value, "category");
 }
 
+/*
+function get_selected_db()
+{
+    var db_object = document.getElementById("selected_db");
+    window.open("/databases/" + db_object.value + ".xls");
+}
+*/
