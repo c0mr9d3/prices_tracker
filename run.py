@@ -1,15 +1,17 @@
 #!/usr/bin/env python3
-import random, re, os
-from sites_parser import tracker
+import random, re, os, time
+from sites_parser import tracker, database
 from markupsafe import Markup
-from flask import Flask, render_template, request, redirect
+from flask import Flask, render_template, request, redirect, session
 from flask import send_from_directory
 
 app = Flask(__name__)
-CURRENT_DIR = os.getcwd()
-selected_db_name = ''
+app.secret_key = str(time.time())
 
-def check_names_db_cat(name):
+CURRENT_DIR = os.getcwd()
+XLS_DATABASES_OBJECTS_LIST = []
+
+def check_allowed_symbols(name):
     if name and len(name) <= 40:
         match_res = re.match('\w+', name)
         if match_res and match_res.endpos == match_res.end():
@@ -34,35 +36,66 @@ def download(filename):
 
 @app.route('/', methods=['GET', 'POST'])
 def main_page():
-    global selected_db_name
+    global XLS_DATABASES_OBJECTS_LIST
     databases_list = show_databases()
+    get_session_variable = lambda session_variable: \
+            session[session_variable] if session_variable in session.keys() else ''
+            
+    print(session)
 
     if request.method == 'POST':
         values_dict = request.values.to_dict()
-        #print(dir(request))
-        print(request.values.to_dict())
+        database_filename = CURRENT_DIR + '/databases/' + '%s.xls'
+        #print(request.values.to_dict())
+
         if 'db_name' in values_dict:
-            if check_names_db_cat(values_dict['db_name']):
-                filename = CURRENT_DIR + '/databases/' + values_dict['db_name'] + '.xls' 
-                if not os.path.isfile(filename):
-                    open(filename, 'w').close()
+            if check_allowed_symbols(values_dict['db_name']):
+                database_filename = database_filename % values_dict['db_name']
+                if not os.path.isfile(database_filename):
+                    open(database_filename, 'w').close()
+
         elif 'selected_db' in values_dict:
-            if os.path.isfile(CURRENT_DIR + '/databases/' + values_dict['selected_db'] + '.xls'):
-                selected_db_name = values_dict['selected_db']
-            else:
-                selected_db_name = ''
+            if check_allowed_symbols(values_dict['selected_db']):
+                database_filename = database_filename % values_dict['selected_db']
+                if os.path.isfile(database_filename):
+                    db_index = get_session_variable('database_object_index')
+                    if db_index == 0 or db_index:
+                        XLS_DATABASES_OBJECTS_LIST[db_index] = database.XlsDB(db_filename=database_filename)
+                    else:
+                        session['database_object_index'] = len(XLS_DATABASES_OBJECTS_LIST)
+                        XLS_DATABASES_OBJECTS_LIST.append(database.XlsDB(db_filename=database_filename))
+
+
+                    session['selected_db'] = values_dict['selected_db']
+                else:
+                    session['selected_db'] = ''
+                    if not get_session_variable('database_object_index'):
+                        session['database_object_index'] = None
+                    else:
+                        XLS_DATABASES_OBJECTS_LIST[session['database_object_index']] = None
+
         elif 'remove_db' in values_dict:
-            os.remove(CURRENT_DIR + '/databases/' + values_dict['remove_db'] + '.xls')
-            selected_db_name = ''
-            return render_template('index.html', \
-                title='Main', selected_db=selected_db_name, \
-                databases_list=databases_list, supported_sites=tracker.SUPPORTED_SITES)
+            if check_allowed_symbols(values_dict['remove_db']):
+                try:
+                    session['selected_db'] = ''
+                    db_index = get_session_variable('database_object_index')
+                    if db_index == 0 or db_index:
+                        XLS_DATABASES_OBJECTS_LIST[db_index] = None
+
+                    database_filename = database_filename % values_dict['remove_db']
+                    os.remove(database_filename)
+
+                    return render_template('index.html', \
+                        title='Main', selected_db=get_session_variable('selected_db'), \
+                        databases_list=databases_list, supported_sites=tracker.SUPPORTED_SITES)
+                except FileNotFoundError:
+                    pass
         
         return redirect('/')
 
-        #print(request.form.get('db_name'))
     return render_template('index.html', \
-            title='Main', selected_db=selected_db_name, \
+            title='Main', \
+            selected_db=get_session_variable('selected_db'), \
             databases_list=databases_list, supported_sites=tracker.SUPPORTED_SITES)
 
 if __name__ == '__main__':

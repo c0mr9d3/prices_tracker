@@ -22,6 +22,12 @@ function check_db_name(input_obj)
 
 function check_category_name(input_obj)
 {
+    var db_object = document.getElementById("selected_db");
+    if ( !db_object.value ) {
+        alert("Need to select database");
+        return;
+    }
+
     if ( !input_obj.category_name.value )
         alert("Please, enter category name. Name should contain only [0-9A-Za-z_] symbols.");
     else
