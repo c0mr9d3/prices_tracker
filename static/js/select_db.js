@@ -15,9 +15,11 @@ function delete_selected_db()
         
         if ( del_db ) {
             var request_object = new XMLHttpRequest();
+            //sessionStorage.setItem("selected_db", "");
             request_object.open("POST", "/", true);
             request_object.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
             request_object.send("remove_db" + "=" + db_object.value);
+            alert("Database " + db_object.value + " was deleted");
         }
     } else
         alert("Database not selected");

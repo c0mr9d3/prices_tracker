@@ -47,13 +47,13 @@ class XlsDB:
             else: # List in file not exist xlrd.biffh.XLRDError
                 products_db = xl_copy(self.read_stream)
 
-            products_db_sheet = products_db.add_sheet(category)
-            products_db_sheet.write(0, self.monitor_column, 'Monitor')
-            products_db_sheet.write(0, self.link_column, 'Link')
-            products_db_sheet.write(0, self.shop_name_column, 'Shop')
-            products_db_sheet.write(0, self.product_name_column, 'Product')
-            products_db.save(self.db_filename)
-            #self.create_sheet_skel()
+            self.create_category_skel(category)
+            #products_db_sheet = products_db.add_sheet(category)
+            #products_db_sheet.write(0, self.monitor_column, 'Monitor')
+            #products_db_sheet.write(0, self.link_column, 'Link')
+            #products_db_sheet.write(0, self.shop_name_column, 'Shop')
+            #products_db_sheet.write(0, self.product_name_column, 'Product')
+            #products_db.save(self.db_filename)
             self.read_stream = xlrd.open_workbook(self.db_filename)
             sheet = self.read_stream.sheet_by_name(category)
 
@@ -77,15 +77,14 @@ class XlsDB:
         products_db.save(self.db_filename)
         self.refresh_book()
 
-    def create_sheet_skel(self, db_object, category):
+    def create_category_skel(self, category):
         try:
             products_db = xl_copy(self.read_stream)
-            sheet = self.read_stream.sheet_by_name(category)
         except Exception:
             if sys.exc_info()[0] is AttributeError: # File not exist or filesize 0 bytes
                 products_db = xlwt.Workbook()
-            else: # List in file not exist xlrd.biffh.XLRDError
-                products_db = xl_copy(self.read_stream)
+            #else: # List in file not exist: xlrd.biffh.XLRDError
+                #products_db = xl_copy(self.read_stream)
 
             products_db_sheet = products_db.add_sheet(category)
             products_db_sheet.write(0, self.monitor_column, 'Monitor')
@@ -93,11 +92,7 @@ class XlsDB:
             products_db_sheet.write(0, self.shop_name_column, 'Shop')
             products_db_sheet.write(0, self.product_name_column, 'Product')
             products_db.save(self.db_filename)
-            self.create_sheet_skel()
-            self.read_stream = xlrd.open_workbook(self.db_filename)
-            products_db_sheet = products_db.add_sheet(category)
-
-        return sheet
+            self.refresh_book()
 
     def get_date_column(self, sheet, date):
         if sheet.row_slice(0)[-1].value.strip() != date:

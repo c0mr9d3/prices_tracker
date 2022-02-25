@@ -41,55 +41,57 @@ def main_page():
     get_session_variable = lambda session_variable: \
             session[session_variable] if session_variable in session.keys() else ''
             
-    print(session)
-
     if request.method == 'POST':
         values_dict = request.values.to_dict()
         database_filename = CURRENT_DIR + '/databases/' + '%s.xls'
         #print(request.values.to_dict())
 
-        if 'db_name' in values_dict:
-            if check_allowed_symbols(values_dict['db_name']):
-                database_filename = database_filename % values_dict['db_name']
-                if not os.path.isfile(database_filename):
-                    open(database_filename, 'w').close()
+        if 'db_name' in values_dict and \
+                check_allowed_symbols(values_dict['db_name']):
+            database_filename = database_filename % values_dict['db_name']
+            if not os.path.isfile(database_filename):
+                open(database_filename, 'w').close()
 
-        elif 'selected_db' in values_dict:
-            if check_allowed_symbols(values_dict['selected_db']):
-                database_filename = database_filename % values_dict['selected_db']
-                if os.path.isfile(database_filename):
-                    db_index = get_session_variable('database_object_index')
-                    if db_index == 0 or db_index:
-                        XLS_DATABASES_OBJECTS_LIST[db_index] = database.XlsDB(db_filename=database_filename)
-                    else:
-                        session['database_object_index'] = len(XLS_DATABASES_OBJECTS_LIST)
-                        XLS_DATABASES_OBJECTS_LIST.append(database.XlsDB(db_filename=database_filename))
-
-
-                    session['selected_db'] = values_dict['selected_db']
+        if 'selected_db' in values_dict and \
+                check_allowed_symbols(values_dict['selected_db']):
+            database_filename = database_filename % values_dict['selected_db']
+            if os.path.isfile(database_filename):
+                db_index = get_session_variable('database_object_index')
+                if db_index == 0 or db_index:
+                    XLS_DATABASES_OBJECTS_LIST[db_index] = database.XlsDB(db_filename=database_filename)
                 else:
-                    session['selected_db'] = ''
-                    if not get_session_variable('database_object_index'):
-                        session['database_object_index'] = None
-                    else:
-                        XLS_DATABASES_OBJECTS_LIST[session['database_object_index']] = None
+                    session['database_object_index'] = len(XLS_DATABASES_OBJECTS_LIST)
+                    XLS_DATABASES_OBJECTS_LIST.append(database.XlsDB(db_filename=database_filename))
 
-        elif 'remove_db' in values_dict:
-            if check_allowed_symbols(values_dict['remove_db']):
-                try:
-                    session['selected_db'] = ''
-                    db_index = get_session_variable('database_object_index')
-                    if db_index == 0 or db_index:
-                        XLS_DATABASES_OBJECTS_LIST[db_index] = None
+                session['selected_db'] = values_dict['selected_db']
+            else:
+                session['selected_db'] = ''
+                if not get_session_variable('database_object_index'):
+                    session['database_object_index'] = None
+                else:
+                    XLS_DATABASES_OBJECTS_LIST[session['database_object_index']] = None
 
-                    database_filename = database_filename % values_dict['remove_db']
-                    os.remove(database_filename)
+        if 'remove_db' in values_dict and \
+                check_allowed_symbols(values_dict['remove_db']):
+            try:
+                del session['selected_db']
+                db_index = get_session_variable('database_object_index')
+                if db_index == 0 or db_index:
+                    XLS_DATABASES_OBJECTS_LIST[db_index] = None
 
-                    return render_template('index.html', \
-                        title='Main', selected_db=get_session_variable('selected_db'), \
-                        databases_list=databases_list, supported_sites=tracker.SUPPORTED_SITES)
-                except FileNotFoundError:
-                    pass
+                database_filename = database_filename % values_dict['remove_db']
+                os.remove(database_filename)
+                databases_list = show_databases()
+
+            except FileNotFoundError:
+                pass
+
+        if 'category_name' in values_dict and \
+                check_allowed_symbols(values_dict['category_name']):
+            db_index = get_session_variable('database_object_index')
+
+            if db_index == 0 or db_index:
+                XLS_DATABASES_OBJECTS_LIST[db_index].create_category_skel(values_dict['category_name'])
         
         return redirect('/')
 

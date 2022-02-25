@@ -11,7 +11,7 @@
 <form>
     <label>Selected database:</label>
     <select id="selected_db" onchange="send_selected_db();">
-        <option disabled selected value> -- select db -- </option>
+        <option disabled selected hidden value> -- select db -- </option>
         {% if selected_db %}
             <option selected value={{ selected_db }}>{{ selected_db }}</option>
         {% endif %}
@@ -43,6 +43,7 @@
             <form method="POST">
                 <label>Selected category:</label>
                 <select>
+                    <option disabled selected hidden value> -- select category 1 -- </option>
                 </select><br>
                 <label for="category_name">Add new link (to selected category):</label>
                 <input type="text" id="link_name" name="link_name">
@@ -103,6 +104,7 @@
             <form method="POST">
                 <label>Selected category:</label>
                 <select>
+                    <option disabled selected hidden value> -- select category 2 -- </option>
                 </select><br>
                 <label for="category_name">Add new link (to selected category):</label>
                 <input type="text" id="link_name" name="link_name">
