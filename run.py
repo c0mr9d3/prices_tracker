@@ -37,6 +37,7 @@ def download(filename):
 @app.route('/', methods=['GET', 'POST'])
 def main_page():
     global XLS_DATABASES_OBJECTS_LIST
+    categories_list = []
     databases_list = show_databases()
     get_session_variable = lambda session_variable: \
             session[session_variable] if session_variable in session.keys() else ''
@@ -44,7 +45,7 @@ def main_page():
     if request.method == 'POST':
         values_dict = request.values.to_dict()
         database_filename = CURRENT_DIR + '/databases/' + '%s.xls'
-        #print(request.values.to_dict())
+        print(request.values.to_dict())
 
         if 'db_name' in values_dict and \
                 check_allowed_symbols(values_dict['db_name']):
@@ -95,10 +96,19 @@ def main_page():
         
         return redirect('/')
 
+    db_index = get_session_variable('database_object_index')
+    if db_index == 0 or db_index:
+        try:
+            categories_list = XLS_DATABASES_OBJECTS_LIST[db_index].get_categories()
+        except AttributeError:
+            categories_list = []
+    
     return render_template('index.html', \
             title='Main', \
             selected_db=get_session_variable('selected_db'), \
-            databases_list=databases_list, supported_sites=tracker.SUPPORTED_SITES)
+            databases_list=databases_list, \
+            categories_list=categories_list, \
+            supported_sites=tracker.SUPPORTED_SITES)
 
 if __name__ == '__main__':
     if not os.path.isdir('databases'):

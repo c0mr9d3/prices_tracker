@@ -44,12 +44,28 @@
                 <label>Selected category:</label>
                 <select>
                     <option disabled selected hidden value> -- select category 1 -- </option>
+                    {% if categories_list %}
+                        {% for category in categories_list %}
+                            <option value={{ category }}>{{ category }}</option>
+                        {% endfor %}
+                    {% endif %}
                 </select><br>
                 <label for="category_name">Add new link (to selected category):</label>
                 <input type="text" id="link_name" name="link_name">
                 <input type="submit" name="add_link_left_cat" value="Add"><br>
                 <input type="submit" name="sync_links_left_cat" value="Synchronize links">
                 <input type="submit" name="show_left_links" value="Show links in current category">
+                <br>
+                <label>Select product 1 (for monitoring):</label>
+                <select>
+                    <option disabled selected hidden value> -- product 1 -- </option>
+                    {% if selected_product1 %}
+                        <option selected value={{ selected_product1 }}>{{ selected_product1 }}</option>
+                    {% endif %}
+
+                    {% if selected_product1_list %}
+                    {% endif %}
+                </select>
             </form>
 
         <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-2.4.2.min.js"></script>
@@ -105,12 +121,28 @@
                 <label>Selected category:</label>
                 <select>
                     <option disabled selected hidden value> -- select category 2 -- </option>
+                    {% if categories_list %}
+                        {% for category in categories_list %}
+                            <option value={{ category }}>{{ category }}</option>
+                        {% endfor %}
+                    {% endif %}
                 </select><br>
                 <label for="category_name">Add new link (to selected category):</label>
                 <input type="text" id="link_name" name="link_name">
                 <input type="submit" name="add_link_right_cat" value="Add"><br>
                 <input type="submit" name="sync_links_right_cat" value="Synchronize links">
                 <input type="submit" name="show_right_links" value="Show links in current category">
+                <br>
+                <label>Select product 2 (for monitoring):</label>
+                <select>
+                    <option disabled selected hidden value> -- product 2 -- </option>
+                    {% if selected_product2 %}
+                        <option selected value={{ selected_product2 }}>{{ selected_product2 }}</option>
+                    {% endif %}
+
+                    {% if selected_product2_list %}
+                    {% endif %}
+                </select>
             </form>
 
         <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-2.4.2.min.js"></script>
