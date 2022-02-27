@@ -49,7 +49,9 @@
                             <option value={{ category }}>{{ category }}</option>
                         {% endfor %}
                     {% endif %}
-                </select><br>
+                </select>
+                <input type="submit" name="delete_cat1" value="Delete">
+                <br>
                 <label for="category_name">Add new link (to selected category):</label>
                 <input type="text" id="link_name" name="link_name">
                 <input type="submit" name="add_link_left_cat" value="Add"><br>
@@ -126,7 +128,9 @@
                             <option value={{ category }}>{{ category }}</option>
                         {% endfor %}
                     {% endif %}
-                </select><br>
+                </select>
+                <input type="submit" name="delete_cat2" value="Delete">
+                <br>
                 <label for="category_name">Add new link (to selected category):</label>
                 <input type="text" id="link_name" name="link_name">
                 <input type="submit" name="add_link_right_cat" value="Add"><br>

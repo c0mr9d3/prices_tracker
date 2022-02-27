@@ -39,12 +39,12 @@ def main_page():
     global XLS_DATABASES_OBJECTS_LIST
     categories_list = []
     databases_list = show_databases()
+    database_filename = CURRENT_DIR + '/databases/' + '%s.xls'
     get_session_variable = lambda session_variable: \
             session[session_variable] if session_variable in session.keys() else ''
-            
+    
     if request.method == 'POST':
         values_dict = request.values.to_dict()
-        database_filename = CURRENT_DIR + '/databases/' + '%s.xls'
         print(request.values.to_dict())
 
         if 'db_name' in values_dict and \
@@ -53,6 +53,7 @@ def main_page():
             if not os.path.isfile(database_filename):
                 open(database_filename, 'w').close()
 
+        '''
         if 'selected_db' in values_dict and \
                 check_allowed_symbols(values_dict['selected_db']):
             database_filename = database_filename % values_dict['selected_db']
@@ -71,6 +72,7 @@ def main_page():
                     session['database_object_index'] = None
                 else:
                     XLS_DATABASES_OBJECTS_LIST[session['database_object_index']] = None
+        '''
 
         if 'remove_db' in values_dict and \
                 check_allowed_symbols(values_dict['remove_db']):
@@ -95,6 +97,27 @@ def main_page():
                 XLS_DATABASES_OBJECTS_LIST[db_index].create_category_skel(values_dict['category_name'])
         
         return redirect('/')
+
+    elif request.method == 'GET':
+        #print(request.args)
+        if 'selected_db' in request.args.keys() and \
+                check_allowed_symbols(request.args.get('selected_db')):
+            database_filename = database_filename % request.args.get('selected_db')
+            if os.path.isfile(database_filename):
+                db_index = get_session_variable('database_object_index')
+                if db_index == 0 or db_index:
+                    XLS_DATABASES_OBJECTS_LIST[db_index] = database.XlsDB(db_filename=database_filename)
+                else:
+                    session['database_object_index'] = len(XLS_DATABASES_OBJECTS_LIST)
+                    XLS_DATABASES_OBJECTS_LIST.append(database.XlsDB(db_filename=database_filename))
+
+                session['selected_db'] = request.args.get('selected_db')
+            else:
+                session['selected_db'] = ''
+                if not get_session_variable('database_object_index'):
+                    session['database_object_index'] = None
+                else:
+                    XLS_DATABASES_OBJECTS_LIST[session['database_object_index']] = None
 
     db_index = get_session_variable('database_object_index')
     if db_index == 0 or db_index:

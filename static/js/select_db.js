@@ -15,7 +15,6 @@ function delete_selected_db()
         
         if ( del_db ) {
             var request_object = new XMLHttpRequest();
-            //sessionStorage.setItem("selected_db", "");
             request_object.open("POST", "/", true);
             request_object.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
             request_object.send("remove_db" + "=" + db_object.value);
@@ -30,8 +29,8 @@ function send_selected_db()
     var db_object = document.getElementById("selected_db");
     var request_object = new XMLHttpRequest();
     if ( db_object.value && db_object.id ) {
-        request_object.open("POST", "/", true);
-        request_object.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-        request_object.send(db_object.id + "=" + db_object.value);
+        var url = new URL(location.origin);
+        url.searchParams.set("selected_db", db_object.value);
+        location.href = url;
     }
 }
