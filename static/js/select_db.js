@@ -24,10 +24,9 @@ function delete_selected_db()
         alert("Database not selected");
 }
 
-function send_selected_db()
+function send_selected_db(db_object)
 {
-    var db_object = document.getElementById("selected_db");
-    var request_object = new XMLHttpRequest();
+    //var db_object = document.getElementById("selected_db");
     if ( db_object.value && db_object.id ) {
         var url = new URL(location.origin);
         url.searchParams.set("selected_db", db_object.value);

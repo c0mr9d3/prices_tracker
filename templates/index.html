@@ -10,7 +10,7 @@
 
 <form>
     <label>Selected database:</label>
-    <select id="selected_db" onchange="send_selected_db();">
+    <select id="selected_db" onchange="send_selected_db(this);">
         <option disabled selected hidden value> -- select db -- </option>
         {% if selected_db %}
             <option selected value={{ selected_db }}>{{ selected_db }}</option>
@@ -42,8 +42,12 @@
         <div class="product1">
             <form method="POST">
                 <label>Selected category:</label>
-                <select>
+                <select id="category1" onchange="select_category(this);">
                     <option disabled selected hidden value> -- select category 1 -- </option>
+                    {% if selected_cat1 %}
+                        <option selected value={{ selected_cat1 }}>{{ selected_cat1 }}</option>
+                    {% endif %}
+
                     {% if categories_list %}
                         {% for category in categories_list %}
                             <option value={{ category }}>{{ category }}</option>
@@ -121,8 +125,12 @@
         <div class="product2">
             <form method="POST">
                 <label>Selected category:</label>
-                <select>
+                <select id="category2" onchange="select_category(this);">
                     <option disabled selected hidden value> -- select category 2 -- </option>
+                    {% if selected_cat2 %}
+                        <option selected value={{ selected_cat2 }}>{{ selected_cat2 }}</option>
+                    {% endif %}
+
                     {% if categories_list %}
                         {% for category in categories_list %}
                             <option value={{ category }}>{{ category }}</option>

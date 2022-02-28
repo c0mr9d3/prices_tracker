@@ -99,10 +99,19 @@ def main_page():
         return redirect('/')
 
     elif request.method == 'GET':
-        #print(request.args)
+        print(request.args)
         if 'selected_db' in request.args.keys() and \
                 check_allowed_symbols(request.args.get('selected_db')):
-            database_filename = database_filename % request.args.get('selected_db')
+            selected_db_arg = request.args.get('selected_db')
+
+            try:
+                if session['selected_db'] != selected_db_arg:
+                    session['category1'] = ''
+                    session['category2'] = ''
+            except KeyError:
+                pass
+
+            database_filename = database_filename % selected_db_arg
             if os.path.isfile(database_filename):
                 db_index = get_session_variable('database_object_index')
                 if db_index == 0 or db_index:
@@ -111,13 +120,38 @@ def main_page():
                     session['database_object_index'] = len(XLS_DATABASES_OBJECTS_LIST)
                     XLS_DATABASES_OBJECTS_LIST.append(database.XlsDB(db_filename=database_filename))
 
-                session['selected_db'] = request.args.get('selected_db')
+                session['selected_db'] = selected_db_arg
             else:
                 session['selected_db'] = ''
                 if not get_session_variable('database_object_index'):
                     session['database_object_index'] = None
                 else:
                     XLS_DATABASES_OBJECTS_LIST[session['database_object_index']] = None
+
+        
+        if 'category1' in request.args.keys() and \
+                check_allowed_symbols(request.args.get('category1')):
+            db_index = get_session_variable('database_object_index')
+            cat1_arg = request.args.get('category1')
+
+            if cat1_arg in XLS_DATABASES_OBJECTS_LIST[db_index].get_categories():
+                session['category1'] = cat1_arg
+            else:
+                session['category1'] = ''
+        elif request.args.get('category1') is '':
+            session['category1'] = ''
+            
+        if 'category2' in request.args.keys() and \
+                check_allowed_symbols(request.args.get('category2')):
+            db_index = get_session_variable('database_object_index')
+            cat2_arg = request.args.get('category2')
+
+            if cat2_arg in XLS_DATABASES_OBJECTS_LIST[db_index].get_categories():
+                session['category2'] = cat2_arg
+            else:
+                session['category2'] = ''
+        elif request.args.get('category2') is '':
+            session['category2'] = ''
 
     db_index = get_session_variable('database_object_index')
     if db_index == 0 or db_index:
@@ -129,6 +163,8 @@ def main_page():
     return render_template('index.html', \
             title='Main', \
             selected_db=get_session_variable('selected_db'), \
+            selected_cat1=get_session_variable('category1'), \
+            selected_cat2=get_session_variable('category2'), \
             databases_list=databases_list, \
             categories_list=categories_list, \
             supported_sites=tracker.SUPPORTED_SITES)
