@@ -14,10 +14,11 @@ function check_name(name, target)
 
 function check_db_name(input_obj)
 {
-    if ( !input_obj.db_name.value )
+    if ( !input_obj.db_name.value ) {
         alert("Please, enter database name. Name should contain only [0-9A-Za-z_] symbols.");
-    else
+    } else {
         check_name(input_obj.db_name.value, "database");
+    }
 }
 
 function check_category_name(input_obj)
@@ -25,7 +26,7 @@ function check_category_name(input_obj)
     var db_object = document.getElementById("selected_db");
     if ( !db_object.value ) {
         alert("Need to select database");
-        return;
+        return false;
     }
 
     if ( !input_obj.category_name.value )

@@ -53,27 +53,6 @@ def main_page():
             if not os.path.isfile(database_filename):
                 open(database_filename, 'w').close()
 
-        '''
-        if 'selected_db' in values_dict and \
-                check_allowed_symbols(values_dict['selected_db']):
-            database_filename = database_filename % values_dict['selected_db']
-            if os.path.isfile(database_filename):
-                db_index = get_session_variable('database_object_index')
-                if db_index == 0 or db_index:
-                    XLS_DATABASES_OBJECTS_LIST[db_index] = database.XlsDB(db_filename=database_filename)
-                else:
-                    session['database_object_index'] = len(XLS_DATABASES_OBJECTS_LIST)
-                    XLS_DATABASES_OBJECTS_LIST.append(database.XlsDB(db_filename=database_filename))
-
-                session['selected_db'] = values_dict['selected_db']
-            else:
-                session['selected_db'] = ''
-                if not get_session_variable('database_object_index'):
-                    session['database_object_index'] = None
-                else:
-                    XLS_DATABASES_OBJECTS_LIST[session['database_object_index']] = None
-        '''
-
         if 'remove_db' in values_dict and \
                 check_allowed_symbols(values_dict['remove_db']):
             try:
@@ -95,11 +74,16 @@ def main_page():
 
             if db_index == 0 or db_index:
                 XLS_DATABASES_OBJECTS_LIST[db_index].create_category_skel(values_dict['category_name'])
+
+        if 'link_name' in values_dict:
+            link = values_dict['link_name']
+            res = re.findall('://www.([\w\-]+)', link)
+            print('res re:', res);
         
         return redirect('/')
 
     elif request.method == 'GET':
-        print(request.args)
+        #print(request.args)
         if 'selected_db' in request.args.keys() and \
                 check_allowed_symbols(request.args.get('selected_db')):
             selected_db_arg = request.args.get('selected_db')

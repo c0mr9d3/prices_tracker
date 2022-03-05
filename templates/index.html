@@ -50,11 +50,13 @@
 
                     {% if categories_list %}
                         {% for category in categories_list %}
-                            <option value={{ category }}>{{ category }}</option>
+                            {% if category != selected_cat1 %}
+                                <option value={{ category }}>{{ category }}</option>
+                            {% endif %}
                         {% endfor %}
                     {% endif %}
                 </select>
-                <input type="submit" name="delete_cat1" value="Delete">
+                <input onclick="delete_cat(1);" type="submit" value="Delete">
                 <br>
                 <label for="category_name">Add new link (to selected category):</label>
                 <input type="text" id="link_name" name="link_name">
@@ -133,11 +135,13 @@
 
                     {% if categories_list %}
                         {% for category in categories_list %}
-                            <option value={{ category }}>{{ category }}</option>
+                            {% if category != selected_cat2 %}
+                                <option value={{ category }}>{{ category }}</option>
+                            {% endif %}
                         {% endfor %}
                     {% endif %}
                 </select>
-                <input type="submit" name="delete_cat2" value="Delete">
+                <input onclick="delete_cat(2);" type="submit" value="Delete">
                 <br>
                 <label for="category_name">Add new link (to selected category):</label>
                 <input type="text" id="link_name" name="link_name">

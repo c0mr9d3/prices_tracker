@@ -84,6 +84,7 @@ class XlsDB:
         products_db_sheet.write(0, self.product_name_column, 'Product')
         products_db.save(self.db_filename)
         self.refresh_book()
+        #print(dir(self.read_stream))
 
     def get_date_column(self, sheet, date):
         if sheet.row_slice(0)[-1].value.strip() != date:
