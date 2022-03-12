@@ -73,12 +73,39 @@ def main_page():
             db_index = get_session_variable('database_object_index')
 
             if db_index == 0 or db_index:
-                XLS_DATABASES_OBJECTS_LIST[db_index].create_category_skel(values_dict['category_name'])
+                if values_dict['category_name'] not in XLS_DATABASES_OBJECTS_LIST[db_index].get_categories():
+                    XLS_DATABASES_OBJECTS_LIST[db_index].create_category_skel(values_dict['category_name'])
+
+        if 'remove_category' in values_dict and \
+                check_allowed_symbols(values_dict['remove_category']) and \
+                get_session_variable('selected_db'):
+            db_index = get_session_variable('database_object_index')
+            rem_cat_name = values_dict['remove_category']
+
+            if db_index == 0 or db_index:
+                XLS_DATABASES_OBJECTS_LIST[db_index].remove_category(rem_cat_name)
 
         if 'link_name' in values_dict:
-            link = values_dict['link_name']
-            res = re.findall('://www.([\w\-]+)', link)
-            print('res re:', res);
+            link = values_dict['link_name'].strip().replace('/www.', '/')
+            find_res = re.findall('https://([\w\-]+.[\w]+)', link) 
+
+            try:
+                target_site = find_res[0]
+                if target_site in tracker.SUPPORTED_SITES and get_session_variable('selected_db'):
+                    if 'add_link_left_cat' in values_dict.keys() and get_session_variable('category1'):
+                        db_index = get_session_variable('database_object_index')
+                        #XLS_DATABASES_OBJECTS_LIST[db_index].add_info(
+                        #    category=get_session_variable('category1'),
+                        #    shop=target_site,
+                        #    product_name=,
+                        #    price=,
+                        #    product_link=link
+                        #)
+                    elif 'add_link_right_cat' in values_dict.keys() and get_session_variable('category2'):
+                        print(get_session_variable('category2'))
+
+            except IndexError: # Name of site not found
+                pass
         
         return redirect('/')
 
@@ -118,11 +145,11 @@ def main_page():
             db_index = get_session_variable('database_object_index')
             cat1_arg = request.args.get('category1')
 
-            if cat1_arg in XLS_DATABASES_OBJECTS_LIST[db_index].get_categories():
+            if (db_index == 0 or db_index) and cat1_arg in XLS_DATABASES_OBJECTS_LIST[db_index].get_categories():
                 session['category1'] = cat1_arg
             else:
                 session['category1'] = ''
-        elif request.args.get('category1') is '':
+        elif request.args.get('category1') == '':
             session['category1'] = ''
             
         if 'category2' in request.args.keys() and \
@@ -130,11 +157,11 @@ def main_page():
             db_index = get_session_variable('database_object_index')
             cat2_arg = request.args.get('category2')
 
-            if cat2_arg in XLS_DATABASES_OBJECTS_LIST[db_index].get_categories():
+            if (db_index == 0 or db_index) and cat2_arg in XLS_DATABASES_OBJECTS_LIST[db_index].get_categories():
                 session['category2'] = cat2_arg
             else:
                 session['category2'] = ''
-        elif request.args.get('category2') is '':
+        elif request.args.get('category2') == '':
             session['category2'] = ''
 
     db_index = get_session_variable('database_object_index')
@@ -144,6 +171,7 @@ def main_page():
         except AttributeError:
             categories_list = []
     
+    #print(session)
     return render_template('index.html', \
             title='Main', \
             selected_db=get_session_variable('selected_db'), \

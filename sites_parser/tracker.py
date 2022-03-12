@@ -8,7 +8,6 @@ USER_AGENT_LIST = (
     'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:77.0) Gecko/20100101 Firefox/77.0',
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.97 Safari/537.36'
 )
-SUPPORTED_SITES = ('ozon.ru', 'citilink.ru')
 
 class ProductInfo:
     def __init__(self, url=None, shop=None):
@@ -75,3 +74,10 @@ class Citilink(ProductInfo):
 class Ozon(Citilink):
     class_product_price = ('rj7 r7j', 'rj7 jr8')
     class_product_name = 's9j'
+
+SHOPS_OBJECTS_DICTIONARY = {
+        'citilink.ru': Citilink,
+        'ozon.ru': Ozon
+}
+SUPPORTED_SITES = tuple(SHOPS_OBJECTS_DICTIONARY.keys())
+
