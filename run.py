@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 import random, re, os, time
 from sites_parser import tracker, database
-from markupsafe import Markup
 from flask import Flask, render_template, request, redirect, session
 from flask import send_from_directory
 
@@ -63,6 +62,8 @@ def main_page():
 
                 database_filename = database_filename % values_dict['remove_db']
                 os.remove(database_filename)
+                session['category1'] = ''
+                session['category2'] = ''
                 databases_list = show_databases()
 
             except FileNotFoundError:
@@ -84,6 +85,12 @@ def main_page():
 
             if db_index == 0 or db_index:
                 XLS_DATABASES_OBJECTS_LIST[db_index].remove_category(rem_cat_name)
+
+            if rem_cat_name == get_session_variable('category1'):
+                session['category1'] = ''
+
+            if rem_cat_name == get_session_variable('category2'):
+                session['category2'] = ''
 
         if 'link_name' in values_dict:
             link = values_dict['link_name'].strip().replace('/www.', '/')
