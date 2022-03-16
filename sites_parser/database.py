@@ -73,9 +73,8 @@ class XlsDB:
     def create_category_skel(self, category):
         try:
             products_db = xl_copy(self.read_stream)
-        except Exception:
-            if sys.exc_info()[0] is AttributeError: # File not exist or filesize 0 bytes
-                products_db = xlwt.Workbook()
+        except AttributeError: # File not exist or filesize 0 bytes
+            products_db = xlwt.Workbook()
 
         products_db_sheet = products_db.add_sheet(category)
         products_db_sheet.write(0, self.monitor_column, 'Monitor')
@@ -84,6 +83,26 @@ class XlsDB:
         products_db_sheet.write(0, self.product_name_column, 'Product')
         products_db.save(self.db_filename)
         self.refresh_book()
+
+    def add_link_to_category(self, category, link):
+        try:
+            if category not in self.get_categories():
+                return -1
+            
+            products_db = xl_copy(self.read_stream)
+            read_sheet = self.read_stream.sheet_by_name(category)
+
+            if link in read_sheet.col_values(self.link_column):
+                return 0
+
+            write_sheet = products_db.get_sheet(category)
+            write_sheet.write(read_sheet.nrows, self.monitor_column, '1')
+            write_sheet.write(read_sheet.nrows, self.link_column, link)
+            products_db.save(self.db_filename)
+            self.refresh_book()
+
+        except AttributeError: # File not exist or filesize 0 bytes (self.read_stream is None)
+            return -1
 
     def get_date_column(self, sheet, date):
         if sheet.row_slice(0)[-1].value.strip() != date:
@@ -94,7 +113,7 @@ class XlsDB:
     def find_product_row(self, sheet, shop, product):
         for row in range(1, sheet.nrows):
             if sheet.row_slice(row)[self.product_name_column].value == product and \
-                            sheet.row_slice(row)[self.shop_site_column].value == shop:
+                    sheet.row_slice(row)[self.shop_site_column].value == shop:
                 return row
 
         return -1

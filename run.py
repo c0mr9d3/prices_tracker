@@ -44,7 +44,7 @@ def main_page():
     
     if request.method == 'POST':
         values_dict = request.values.to_dict()
-        print(request.values.to_dict())
+        #print(request.values.to_dict())
 
         if 'db_name' in values_dict and \
                 check_allowed_symbols(values_dict['db_name']):
@@ -53,7 +53,8 @@ def main_page():
                 open(database_filename, 'w').close()
 
         if 'remove_db' in values_dict and \
-                check_allowed_symbols(values_dict['remove_db']):
+                check_allowed_symbols(values_dict['remove_db']) and \
+                get_session_variable('selected_db'):
             try:
                 del session['selected_db']
                 db_index = get_session_variable('database_object_index')
@@ -70,7 +71,8 @@ def main_page():
                 pass
 
         if 'category_name' in values_dict and \
-                check_allowed_symbols(values_dict['category_name']):
+                check_allowed_symbols(values_dict['category_name']) and \
+                get_session_variable('selected_db'):
             db_index = get_session_variable('database_object_index')
 
             if db_index == 0 or db_index:
@@ -92,24 +94,20 @@ def main_page():
             if rem_cat_name == get_session_variable('category2'):
                 session['category2'] = ''
 
-        if 'link_name' in values_dict:
+        if 'link_name' in values_dict and \
+                get_session_variable('selected_db'):
             link = values_dict['link_name'].strip().replace('/www.', '/')
             find_res = re.findall('https://([\w\-]+.[\w]+)', link) 
 
             try:
                 target_site = find_res[0]
-                if target_site in tracker.SUPPORTED_SITES and get_session_variable('selected_db'):
+                if target_site in tracker.SUPPORTED_SITES:
                     if 'add_link_left_cat' in values_dict.keys() and get_session_variable('category1'):
                         db_index = get_session_variable('database_object_index')
-                        #XLS_DATABASES_OBJECTS_LIST[db_index].add_info(
-                        #    category=get_session_variable('category1'),
-                        #    shop=target_site,
-                        #    product_name=,
-                        #    price=,
-                        #    product_link=link
-                        #)
+                        XLS_DATABASES_OBJECTS_LIST[db_index].add_link_to_category(get_session_variable('category1'), link)
                     elif 'add_link_right_cat' in values_dict.keys() and get_session_variable('category2'):
-                        print(get_session_variable('category2'))
+                        db_index = get_session_variable('database_object_index')
+                        XLS_DATABASES_OBJECTS_LIST[db_index].add_link_to_category(get_session_variable('category2'), link)
 
             except IndexError: # Name of site not found
                 pass
@@ -148,7 +146,8 @@ def main_page():
 
         
         if 'category1' in request.args.keys() and \
-                check_allowed_symbols(request.args.get('category1')):
+                check_allowed_symbols(request.args.get('category1')) and \
+                get_session_variable('selected_db'):
             db_index = get_session_variable('database_object_index')
             cat1_arg = request.args.get('category1')
 
@@ -160,7 +159,8 @@ def main_page():
             session['category1'] = ''
             
         if 'category2' in request.args.keys() and \
-                check_allowed_symbols(request.args.get('category2')):
+                check_allowed_symbols(request.args.get('category2')) and \
+                get_session_variable('selected_db'):
             db_index = get_session_variable('database_object_index')
             cat2_arg = request.args.get('category2')
 
