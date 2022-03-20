@@ -34,13 +34,15 @@ class XlsDB:
             print('File not exist. Need add information about product')
     '''
 
-    def add_info(self, category, shop, product_name, price, product_link, date=None):
+    def update_product_info(self, category, product_row, product_name, price, date=None):
+        if product_row < 1:
+            return -1
+
         if not date:
             date = self.today
 
         try:
             products_db = xl_copy(self.read_stream)
-            sheet = self.read_stream.sheet_by_name(category)
         except Exception:
             if sys.exc_info()[0] is AttributeError: # File not exist or filesize 0 bytes
                 products_db = xlwt.Workbook()
@@ -48,27 +50,22 @@ class XlsDB:
                 products_db = xl_copy(self.read_stream)
 
             self.create_category_skel(category)
-            sheet = self.read_stream.sheet_by_name(category)
 
+        sheet_read = self.read_stream.sheet_by_name(category)
         sheet_write = products_db.get_sheet(category)
-
-        product_row = self.find_product_row(sheet, shop, product_name)
-        product_col_date = self.get_date_column(sheet, date)
+        product_col_date = self.get_date_column(sheet_read, date)
 
         if product_col_date < 0:
-            product_col_date = sheet.ncols  # cells start with 0
+            product_col_date = sheet_read.ncols  # cells start with 0
 
-        if product_row < 0: # product row not found
-            product_row = sheet.nrows
-            sheet_write.write(product_row, self.monitor_column, 1)
-            sheet_write.write(product_row, self.link_column, product_link)
-            sheet_write.write(product_row, self.shop_site_column, shop)
+        if not sheet_read.cell(product_row, self.product_name_column).value:
             sheet_write.write(product_row, self.product_name_column, product_name)
 
         sheet_write.write(0, product_col_date, date)
         sheet_write.write(product_row, product_col_date, price)
         products_db.save(self.db_filename)
         self.refresh_book()
+        return 0
 
     def create_category_skel(self, category):
         try:
@@ -83,26 +80,43 @@ class XlsDB:
         products_db_sheet.write(0, self.product_name_column, 'Product')
         products_db.save(self.db_filename)
         self.refresh_book()
+        return 0
 
-    def add_link_to_category(self, category, link):
+    def add_link_to_category(self, category, link, shop_site):
+        if category not in self.get_categories():
+            return -1
+
         try:
-            if category not in self.get_categories():
-                return -1
-            
             products_db = xl_copy(self.read_stream)
             read_sheet = self.read_stream.sheet_by_name(category)
-
-            if link in read_sheet.col_values(self.link_column):
-                return 0
-
             write_sheet = products_db.get_sheet(category)
-            write_sheet.write(read_sheet.nrows, self.monitor_column, '1')
-            write_sheet.write(read_sheet.nrows, self.link_column, link)
-            products_db.save(self.db_filename)
-            self.refresh_book()
 
         except AttributeError: # File not exist or filesize 0 bytes (self.read_stream is None)
             return -1
+
+        if link in read_sheet.col_values(self.link_column):
+            return 0
+
+        write_sheet.write(read_sheet.nrows, self.monitor_column, '1')
+        write_sheet.write(read_sheet.nrows, self.link_column, link)
+        write_sheet.write(read_sheet.nrows, self.shop_site_column, shop_site)
+        products_db.save(self.db_filename)
+        self.refresh_book()
+
+    def get_monitor_links_from_category(self, category):
+        if category not in self.get_categories():
+            return -1
+
+        try:
+            read_sheet = self.read_stream.sheet_by_name(category)
+        except AttributeError:
+            return -2
+
+        for row in range(1, read_sheet.nrows):#read_sheet.col_values(self.link_column)[1:]:
+            if read_sheet.cell(row, self.monitor_column).value == '1':
+                yield { 'link': read_sheet.cell(row, self.link_column).value,
+                        'site': read_sheet.cell(row, self.shop_site_column).value,
+                        'row': row }
 
     def get_date_column(self, sheet, date):
         if sheet.row_slice(0)[-1].value.strip() != date:
@@ -141,15 +155,17 @@ class XlsDB:
                     new_workbook.save(self.db_filename)
                 self.refresh_book()
 
-                return 0
             except AttributeError: # self.read_stream is None
                 return -1
 
-        return -1
+        return 0
 
     def refresh_book(self):
         try:
             self.read_stream = xlrd.open_workbook(self.db_filename)
         except FileNotFoundError:
             self.read_stream = None
+            return -1
+        
+        return 0
 

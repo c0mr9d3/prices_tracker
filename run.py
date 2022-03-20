@@ -1,18 +1,18 @@
 #!/usr/bin/env python3
-import random, re, os, time
+import secrets, re, os, time
 from sites_parser import tracker, database
 from flask import Flask, render_template, request, redirect, session
 from flask import send_from_directory
 
 app = Flask(__name__)
-app.secret_key = str(time.time())
+app.secret_key = secrets.token_hex(16)
 
 CURRENT_DIR = os.getcwd()
 XLS_DATABASES_OBJECTS_LIST = []
 
 def check_allowed_symbols(name):
     if name and len(name) <= 40:
-        match_res = re.match('\w+', name)
+        match_res = re.match('[A-Za-z0-9_]+', name)
         if match_res and match_res.endpos == match_res.end():
             return True
 
@@ -44,7 +44,7 @@ def main_page():
     
     if request.method == 'POST':
         values_dict = request.values.to_dict()
-        #print(request.values.to_dict())
+        print(request.values.to_dict())
 
         if 'db_name' in values_dict and \
                 check_allowed_symbols(values_dict['db_name']):
@@ -58,7 +58,7 @@ def main_page():
             try:
                 del session['selected_db']
                 db_index = get_session_variable('database_object_index')
-                if db_index == 0 or db_index:
+                if type(db_index) is int:
                     XLS_DATABASES_OBJECTS_LIST[db_index] = None
 
                 database_filename = database_filename % values_dict['remove_db']
@@ -75,7 +75,7 @@ def main_page():
                 get_session_variable('selected_db'):
             db_index = get_session_variable('database_object_index')
 
-            if db_index == 0 or db_index:
+            if type(db_index) is int:
                 if values_dict['category_name'] not in XLS_DATABASES_OBJECTS_LIST[db_index].get_categories():
                     XLS_DATABASES_OBJECTS_LIST[db_index].create_category_skel(values_dict['category_name'])
 
@@ -85,7 +85,7 @@ def main_page():
             db_index = get_session_variable('database_object_index')
             rem_cat_name = values_dict['remove_category']
 
-            if db_index == 0 or db_index:
+            if type(db_index) is int:
                 XLS_DATABASES_OBJECTS_LIST[db_index].remove_category(rem_cat_name)
 
             if rem_cat_name == get_session_variable('category1'):
@@ -102,15 +102,45 @@ def main_page():
             try:
                 target_site = find_res[0]
                 if target_site in tracker.SUPPORTED_SITES:
-                    if 'add_link_left_cat' in values_dict.keys() and get_session_variable('category1'):
+                    if 'add_link_left_cat' in values_dict.keys():
+                        target_cat = get_session_variable('category1')
+                    elif 'add_link_right_cat' in values_dict.keys():
+                        target_cat = get_session_variable('category2')
+                    else:
+                        target_cat = ''
+
+                    if target_cat:
                         db_index = get_session_variable('database_object_index')
-                        XLS_DATABASES_OBJECTS_LIST[db_index].add_link_to_category(get_session_variable('category1'), link)
-                    elif 'add_link_right_cat' in values_dict.keys() and get_session_variable('category2'):
-                        db_index = get_session_variable('database_object_index')
-                        XLS_DATABASES_OBJECTS_LIST[db_index].add_link_to_category(get_session_variable('category2'), link)
+                        if type(db_index) is int:
+                            XLS_DATABASES_OBJECTS_LIST[db_index].add_link_to_category(
+                                    target_cat,
+                                    link,
+                                    target_site
+                            )
 
             except IndexError: # Name of site not found
                 pass
+
+        if ('sync_links_left_cat' in values_dict or 'sync_links_right_cat' in values_dict) and \
+                get_session_variable('selected_db'):
+            if 'sync_links_left_cat' in values_dict:
+                target_cat = get_session_variable('category1')
+            elif 'sync_links_right_cat' in values_dict:
+                target_cat = get_session_variable('category2')
+            else:
+                target_cat = ''
+
+            if target_cat:
+                db_index = get_session_variable('database_object_index')
+                if type(db_index) is int and \
+                        target_cat in XLS_DATABASES_OBJECTS_LIST[db_index].get_categories():
+                    products = XLS_DATABASES_OBJECTS_LIST[db_index].get_monitor_links_from_category(target_cat)
+                    for product_dict_info in products:
+                        try:
+                            product_name, product_price = tracker.SHOPS_OBJECTS_DICTIONARY[product_dict_info['site']]().get_product_info(product_dict_info['link'])
+                            XLS_DATABASES_OBJECTS_LIST[db_index].update_product_info(target_cat, product_dict_info['row'], product_name, product_price)
+                        except (KeyError, TypeError): # TypeError if get_product_info return < 0
+                            continue
         
         return redirect('/')
 
