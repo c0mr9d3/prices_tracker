@@ -66,3 +66,13 @@ html, body {
     text-align: center;
     border-left: 1px solid black;
 }
+
+.scroll_box_products {
+    text-align: left;
+    height: 100px;
+    width: 300px;
+    border: solid 2px orange;
+    white-space: nowrap;
+    overflow: scroll;
+    margin: 0 auto;
+}

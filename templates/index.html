@@ -68,18 +68,22 @@
 
             <form method="POST">
                 <input type="submit" name="sync_links_left_cat" value="Synchronize links">
-                <input type="submit" name="show_left_links" value="Show links in current category">
+                <input type="submit" name="show_left_links" value="Show sheet in current category">
                 <br>
-                <label>Select product 1 (for monitoring):</label>
-                <select>
-                    <option disabled selected hidden value> -- product 1 -- </option>
-                    {% if selected_product1 %}
-                        <option selected value={{ selected_product1 }}>{{ selected_product1 }}</option>
-                    {% endif %}
+            </form>
 
-                    {% if selected_product1_list %}
+            <form method="POST">
+                <label>Select product 1 (for monitoring):</label>
+                <div class="scroll_box_products">
+                    {% if monitor_products_list_left %}
+                        {% for product in monitor_products_list_left %}
+                            {% if product and product != 'Error' %}
+                                <input type="radio" id="html" name="monitor_product" value={{ product }}>
+                                <label for="html">{{ product }}</label><br>
+                            {% endif %}
+                        {% endfor %}
                     {% endif %}
-                </select>
+                </div>
             </form>
 
         <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-2.4.2.min.js"></script>
@@ -159,18 +163,22 @@
             
             <form method="POST">
                 <input type="submit" name="sync_links_right_cat" value="Synchronize links">
-                <input type="submit" name="show_right_links" value="Show links in current category">
+                <input type="submit" name="show_right_links" value="Show sheet in current category">
                 <br>
+            </form>
+            
+            <form method="POST">
                 <label>Select product 2 (for monitoring):</label>
-                <select>
-                    <option disabled selected hidden value> -- product 2 -- </option>
-                    {% if selected_product2 %}
-                        <option selected value={{ selected_product2 }}>{{ selected_product2 }}</option>
+                <div class="scroll_box_products">
+                    {% if monitor_products_list_right %}
+                        {% for product in monitor_products_list_right %}
+                            {% if product and product != 'Error' %}
+                                <input type="radio" id="html" name="monitor_product" value={{ product }}>
+                                <label for="html">{{ product }}</label><br>
+                            {% endif %}
+                        {% endfor %}
                     {% endif %}
-
-                    {% if selected_product2_list %}
-                    {% endif %}
-                </select>
+                </div>
             </form>
 
         <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-2.4.2.min.js"></script>

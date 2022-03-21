@@ -37,6 +37,8 @@ def download(filename):
 def main_page():
     global XLS_DATABASES_OBJECTS_LIST
     categories_list = []
+    monitor_products_list_left = []
+    monitor_products_list_right = []
     databases_list = show_databases()
     database_filename = CURRENT_DIR + '/databases/' + '%s.xls'
     get_session_variable = lambda session_variable: \
@@ -173,7 +175,6 @@ def main_page():
                     session['database_object_index'] = None
                 else:
                     XLS_DATABASES_OBJECTS_LIST[session['database_object_index']] = None
-
         
         if 'category1' in request.args.keys() and \
                 check_allowed_symbols(request.args.get('category1')) and \
@@ -181,8 +182,9 @@ def main_page():
             db_index = get_session_variable('database_object_index')
             cat1_arg = request.args.get('category1')
 
-            if (db_index == 0 or db_index) and cat1_arg in XLS_DATABASES_OBJECTS_LIST[db_index].get_categories():
+            if type(db_index) is int and cat1_arg in XLS_DATABASES_OBJECTS_LIST[db_index].get_categories():
                 session['category1'] = cat1_arg
+                monitor_products_list_left = XLS_DATABASES_OBJECTS_LIST[db_index].get_products_names_from_category(cat1_arg)
             else:
                 session['category1'] = ''
         elif request.args.get('category1') == '':
@@ -194,20 +196,30 @@ def main_page():
             db_index = get_session_variable('database_object_index')
             cat2_arg = request.args.get('category2')
 
-            if (db_index == 0 or db_index) and cat2_arg in XLS_DATABASES_OBJECTS_LIST[db_index].get_categories():
+            if type(db_index) is int and cat2_arg in XLS_DATABASES_OBJECTS_LIST[db_index].get_categories():
                 session['category2'] = cat2_arg
+                monitor_products_list_right = XLS_DATABASES_OBJECTS_LIST[db_index].get_products_names_from_category(cat2_arg)
             else:
                 session['category2'] = ''
         elif request.args.get('category2') == '':
             session['category2'] = ''
 
     db_index = get_session_variable('database_object_index')
-    if db_index == 0 or db_index:
+    if type(db_index) is int and get_session_variable('selected_db'):
         try:
             categories_list = XLS_DATABASES_OBJECTS_LIST[db_index].get_categories()
         except AttributeError:
             categories_list = []
-    
+
+        cat1 = get_session_variable('category1')
+        cat2 = get_session_variable('category2')
+
+        if cat1:
+            monitor_products_list_left = XLS_DATABASES_OBJECTS_LIST[db_index].get_products_names_from_category(cat1)
+
+        if cat2:
+            monitor_products_list_right = XLS_DATABASES_OBJECTS_LIST[db_index].get_products_names_from_category(cat2)
+
     #print(session)
     return render_template('index.html', \
             title='Main', \
@@ -216,7 +228,10 @@ def main_page():
             selected_cat2=get_session_variable('category2'), \
             databases_list=databases_list, \
             categories_list=categories_list, \
-            supported_sites=tracker.SUPPORTED_SITES)
+            supported_sites=tracker.SUPPORTED_SITES, \
+            monitor_products_list_left=monitor_products_list_left, \
+            monitor_products_list_right=monitor_products_list_right
+    )
 
 if __name__ == '__main__':
     if not os.path.isdir('databases'):

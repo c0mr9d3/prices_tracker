@@ -28,6 +28,7 @@ class Citilink:
         client_headers = {
             'User-Agent': random.choice(USER_AGENT_LIST)
         }
+
         try:
             connection = requests.get(url, headers=client_headers)
             if connection.status_code != 200:
@@ -65,8 +66,8 @@ class Citilink:
 class Ozon(Citilink):
     def __init__(self):
         super()
-        self.class_product_price = ('rj7 r7j', 'rj7 jr8')
-        self.class_product_name = 's9j'
+        self.class_product_price = ('rj7 r7j', 'rj7 jr8', 'kr8 k8r', 'kr8')
+        self.class_product_name = 'tk'
 
 SHOPS_OBJECTS_DICTIONARY = {
         'citilink.ru': Citilink,

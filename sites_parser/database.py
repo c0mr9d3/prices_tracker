@@ -58,7 +58,8 @@ class XlsDB:
         if product_col_date < 0:
             product_col_date = sheet_read.ncols  # cells start with 0
 
-        if not sheet_read.cell(product_row, self.product_name_column).value:
+        if not sheet_read.cell(product_row, self.product_name_column).value or \
+                sheet_read.cell(product_row, self.product_name_column).value == 'Error':
             sheet_write.write(product_row, self.product_name_column, product_name)
 
         sheet_write.write(0, product_col_date, date)
@@ -117,6 +118,17 @@ class XlsDB:
                 yield { 'link': read_sheet.cell(row, self.link_column).value,
                         'site': read_sheet.cell(row, self.shop_site_column).value,
                         'row': row }
+
+    def get_products_names_from_category(self, category):
+        if category not in self.get_categories():
+            return []
+
+        try:
+            read_sheet = self.read_stream.sheet_by_name(category)
+        except AttributeError:
+            return []
+
+        return read_sheet.col_values(self.product_name_column)[1:]
 
     def get_date_column(self, sheet, date):
         if sheet.row_slice(0)[-1].value.strip() != date:
