@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-import secrets, re, os, time
+import secrets, re, os, tempfile
+from web_app import gen_plotters
 from sites_parser import tracker, database
 from flask import Flask, render_template, request, redirect, session
 from flask import send_from_directory
@@ -144,6 +145,44 @@ def main_page():
                         except (KeyError, TypeError): # TypeError if get_product_info return < 0
                             continue
         
+        if ('plotter1' in values_dict or 'plotter2' in values_dict) and \
+                get_session_variable('selected_db'):
+            db_index = get_session_variable('database_object_index')
+
+            if 'plotter1' in values_dict:
+                cat_name = get_session_variable('category1')
+                product_name = values_dict['plotter1']
+                plot_fd = 'plot1_fd'
+            else:
+                cat_name = get_session_variable('category2')
+                product_name = values_dict['plotter2']
+                plot_fd = 'plot2_fd'
+            
+            if type(db_index) is int and cat_name:
+                dates = XLS_DATABASES_OBJECTS_LIST[db_index].get_dates_from_category(cat_name)
+                prices = XLS_DATABASES_OBJECTS_LIST[db_index].get_product_prices(cat_name, product_name)
+
+                if len(dates) == len(prices) and dates and prices:
+                    plotter = gen_plotters.Plotter()
+                    for i in range(len(dates)):
+                        if not prices[i] or not dates[i]:
+                            continue
+                        
+                        try:
+                            int(prices[i])
+                        except ValueError:
+                            prices[i] = '0'
+
+                        plotter.add_date_price(dates[i], prices[i])
+
+                    plot_json = plotter.get_json_plot(product_name)
+
+                    if plot_json:
+                        session[plot_fd] = plot_json
+                        #session['plot1_fd'] = tempfile.TemporaryFile()
+                        #session['plot1_fd'].write(plot_json.encode())
+                        #session['plot1_fd'].seek(0)
+
         return redirect('/')
 
     elif request.method == 'GET':
@@ -230,7 +269,9 @@ def main_page():
             categories_list=categories_list, \
             supported_sites=tracker.SUPPORTED_SITES, \
             monitor_products_list_left=monitor_products_list_left, \
-            monitor_products_list_right=monitor_products_list_right
+            monitor_products_list_right=monitor_products_list_right, \
+            plotter1_json=session['plot1_fd'] if get_session_variable('plot1_fd') else gen_plotters.FILL_PLOT, \
+            plotter2_json=session['plot2_fd'] if get_session_variable('plot2_fd') else gen_plotters.FILL_PLOT
     )
 
 if __name__ == '__main__':
