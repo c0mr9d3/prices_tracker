@@ -74,7 +74,6 @@
 
             <form method="POST">
                 <label>Select product 1 (for monitoring):</label>
-                <input type="submit" name="generate_plot1" value="Build plotter">
                 <div class="scroll_box_products">
                     {% if monitor_products_list_left %}
                         {% for product in monitor_products_list_left %}
@@ -85,6 +84,9 @@
                         {% endfor %}
                     {% endif %}
                 </div>
+                <label>Plotter settings:</label>
+                <input type="submit" name="generate_plot1" value="Build plotter">
+                <input type="submit" name="clear_plot1" value="Clear plotter">
             </form>
 
         <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-2.4.2.min.js"></script>
@@ -174,7 +176,6 @@
             
             <form method="POST">
                 <label>Select product 2 (for monitoring):</label>
-                <input type="submit" name="generate_plot2" value="Build plotter">
                 <div class="scroll_box_products">
                     {% if monitor_products_list_right %}
                         {% for product in monitor_products_list_right %}
@@ -185,6 +186,9 @@
                         {% endfor %}
                     {% endif %}
                 </div>
+                <label>Plotter settings:</label>
+                <input type="submit" name="generate_plot2" value="Build plotter">
+                <input type="submit" name="clear_plot2" value="Clear plotter">
             </form>
 
         <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-2.4.2.min.js"></script>

@@ -190,6 +190,12 @@ def main_page():
                         #session['plot1_fd'].write(plot_json.encode())
                         #session['plot1_fd'].seek(0)
 
+        if 'clear_plot1' in values_dict:
+            session['plot1_fd'] = ''
+
+        if 'clear_plot2' in values_dict:
+            session['plot2_fd'] = ''
+
         return redirect('/')
 
     elif request.method == 'GET':
@@ -266,7 +272,7 @@ def main_page():
         if cat2:
             monitor_products_list_right = XLS_DATABASES_OBJECTS_LIST[db_index].get_products_names_from_category(cat2)
 
-    #print(session)
+    print(session)
     return render_template('index.html', \
             selected_db=get_session_variable('selected_db'), \
             selected_cat1=get_session_variable('category1'), \

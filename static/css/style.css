@@ -47,10 +47,14 @@ html, body {
 }
 
 .plotters {
+    /*
     display: flex;
     flex-direction: row;
     align-items: center;
     justify-content: center;
+    */
+    display: inline flex;
+    box-sizing: border-box;
     border-bottom: 2px solid black;
     border-top: 2px solid black;
     border-left: 2px solid black;
@@ -58,12 +62,14 @@ html, body {
 }
 
 .product1 {
-    text-align: center;
+    text-align: left;
+    width: 50vw;
     border-right: 1px solid black;
 }
 
 .product2 {
-    text-align: center;
+    text-align: left;
+    width: 50vw;
     border-left: 1px solid black;
 }
 
@@ -74,5 +80,5 @@ html, body {
     border: solid 2px orange;
     white-space: nowrap;
     overflow: scroll;
-    margin: 0 auto;
+    /*margin: 0 auto;*/
 }
