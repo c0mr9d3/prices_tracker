@@ -3,13 +3,7 @@
     <head>
         <meta charset="UTF-8">
         <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-        {% block title %}
-            {% if title %}
-                <title>Flask - {{ title }}</title>
-            {% else %}
-                <title>Flask</title>
-            {% endif %}
-        {% endblock title %}
+        <title>Prices tracker</title>
     </head>
 
     <body>

@@ -3,7 +3,7 @@ import secrets, re, os, tempfile
 from web_app import gen_plotters
 from sites_parser import tracker, database
 from flask import Flask, render_template, request, redirect, session
-from flask import send_from_directory
+from flask import send_file, abort
 
 app = Flask(__name__)
 app.secret_key = secrets.token_hex(16)
@@ -20,7 +20,7 @@ def check_allowed_symbols(name):
     return False
 
 def show_databases():
-    databases_dir = CURRENT_DIR + '/databases'
+    databases_dir = os.path.join(CURRENT_DIR, 'databases')
     db_list = []
 
     if os.path.isdir(databases_dir):
@@ -32,7 +32,14 @@ def show_databases():
 
 @app.route('/databases/<path:filename>')
 def download(filename):
-    return send_from_directory(path=CURRENT_DIR, directory='databases/', filename=filename)
+    if type(filename) is not str:
+        abort(404)
+
+    file_path = os.path.join(CURRENT_DIR, 'databases', filename)
+    if os.path.isfile(file_path):
+        return send_file(file_path, as_attachment=True)
+
+    abort(404)
 
 @app.route('/', methods=['GET', 'POST'])
 def main_page():
@@ -41,7 +48,7 @@ def main_page():
     monitor_products_list_left = []
     monitor_products_list_right = []
     databases_list = show_databases()
-    database_filename = CURRENT_DIR + '/databases/' + '%s.xls'
+    database_filename = os.path.join(CURRENT_DIR, 'databases', '%s.xls')
     get_session_variable = lambda session_variable: \
             session[session_variable] if session_variable in session.keys() else ''
     
@@ -261,7 +268,6 @@ def main_page():
 
     #print(session)
     return render_template('index.html', \
-            title='Main', \
             selected_db=get_session_variable('selected_db'), \
             selected_cat1=get_session_variable('category1'), \
             selected_cat2=get_session_variable('category2'), \
@@ -270,8 +276,8 @@ def main_page():
             supported_sites=tracker.SUPPORTED_SITES, \
             monitor_products_list_left=monitor_products_list_left, \
             monitor_products_list_right=monitor_products_list_right, \
-            plotter1_json=session['plot1_fd'] if get_session_variable('plot1_fd') else gen_plotters.FILL_PLOT, \
-            plotter2_json=session['plot2_fd'] if get_session_variable('plot2_fd') else gen_plotters.FILL_PLOT
+            plotter1_json=get_session_variable('plot1_fd'), \
+            plotter2_json=get_session_variable('plot2_fd')
     )
 
 if __name__ == '__main__':

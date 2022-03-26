@@ -37,7 +37,7 @@ class Plotter:
 
         plot.circle(self.dates_array, self.prices_array, size=8)
         plot.line(self.dates_array, self.prices_array, color='navy', line_width=1)
-        plot.xaxis[0].formatter = DatetimeTickFormatter(months='%b %Y')
+        plot.xaxis[0].formatter = DatetimeTickFormatter(days='%d/%b', months='%b %Y')
         plot.yaxis[0].formatter = NumeralTickFormatter(format='0,0')
 
         plot_document = Document()
