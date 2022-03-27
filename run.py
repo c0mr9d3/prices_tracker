@@ -19,6 +19,15 @@ def check_allowed_symbols(name):
 
     return False
 
+def read_tmp_file(path):
+    if type(path) is not str or not os.path.isfile(path):
+        return ''
+
+    with open(path, 'r', encoding='utf8') as tmp_fp:
+        return tmp_fp.read()
+
+    return ''
+
 def show_databases():
     databases_dir = os.path.join(CURRENT_DIR, 'databases')
     db_list = []
@@ -159,11 +168,11 @@ def main_page():
             if 'plotter1' in values_dict:
                 cat_name = get_session_variable('category1')
                 product_name = values_dict['plotter1']
-                plot_fd = 'plot1_fd'
+                plot_file_path = 'plot1_file_path'
             else:
                 cat_name = get_session_variable('category2')
                 product_name = values_dict['plotter2']
-                plot_fd = 'plot2_fd'
+                plot_file_path = 'plot2_file_path'
             
             if type(db_index) is int and cat_name:
                 dates = XLS_DATABASES_OBJECTS_LIST[db_index].get_dates_from_category(cat_name)
@@ -177,24 +186,30 @@ def main_page():
                         
                         try:
                             int(prices[i])
-                        except ValueError:
-                            prices[i] = '0'
+                        except ValueError: # prices[i] is str
+                            continue
 
                         plotter.add_date_price(dates[i], prices[i])
 
                     plot_json = plotter.get_json_plot(product_name)
 
                     if plot_json:
-                        session[plot_fd] = plot_json
-                        #session['plot1_fd'] = tempfile.TemporaryFile()
-                        #session['plot1_fd'].write(plot_json.encode())
-                        #session['plot1_fd'].seek(0)
+                        tmp_file_fd_num, tmp_file_path = tempfile.mkstemp()
+                        os.close(tmp_file_fd_num)
+                        session[plot_file_path] = tmp_file_path
+
+                        with open(session[plot_file_path], 'w') as plot_fp:
+                            plot_fp.write(plot_json)
 
         if 'clear_plot1' in values_dict:
-            session['plot1_fd'] = ''
+            if os.path.isfile(get_session_variable('plot1_file_path')):
+                os.remove(session['plot1_file_path'])
+                session['plot1_file_path'] = ''
 
         if 'clear_plot2' in values_dict:
-            session['plot2_fd'] = ''
+            if os.path.isfile(get_session_variable('plot2_file_path')):
+                os.remove(get_session_variable('plot2_file_path'))
+                session['plot2_file_path'] = ''
 
         return redirect('/')
 
@@ -272,7 +287,7 @@ def main_page():
         if cat2:
             monitor_products_list_right = XLS_DATABASES_OBJECTS_LIST[db_index].get_products_names_from_category(cat2)
 
-    print(session)
+    #print(session)
     return render_template('index.html', \
             selected_db=get_session_variable('selected_db'), \
             selected_cat1=get_session_variable('category1'), \
@@ -282,8 +297,8 @@ def main_page():
             supported_sites=tracker.SUPPORTED_SITES, \
             monitor_products_list_left=monitor_products_list_left, \
             monitor_products_list_right=monitor_products_list_right, \
-            plotter1_json=get_session_variable('plot1_fd'), \
-            plotter2_json=get_session_variable('plot2_fd')
+            plotter1_json=read_tmp_file(get_session_variable('plot1_file_path')), \
+            plotter2_json=read_tmp_file(get_session_variable('plot2_file_path'))
     )
 
 if __name__ == '__main__':

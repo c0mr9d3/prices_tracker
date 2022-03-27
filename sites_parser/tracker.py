@@ -54,7 +54,7 @@ class Citilink:
                 continue
 
         if not price:
-            price = 'Price not found'
+            price = '-1'
 
         try:
             name = soup.find_all('h1', class_=self.class_product_name)[0].text.strip()

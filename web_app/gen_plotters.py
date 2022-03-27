@@ -24,7 +24,8 @@ class Plotter:
         if type(plot_name) is not str:
             return ''
 
-        if not self.dates_array or not self.prices_array:
+        if not self.dates_array or not self.prices_array or \
+                len(self.dates_array) != len(self.dates_array):
             return ''
 
         plot = figure(
@@ -35,8 +36,39 @@ class Plotter:
                 y_axis_label='price'
         )
 
-        plot.circle(self.dates_array, self.prices_array, size=8)
-        plot.line(self.dates_array, self.prices_array, color='navy', line_width=1)
+        slice_start_index = 0
+        n_nones = self.prices_array.count(-1) # -1 means that price not found
+
+        for i in range(n_nones):
+            none_index = self.prices_array[slice_start_index:].index(-1) + slice_start_index
+            plot.circle(
+                    self.dates_array[slice_start_index:none_index],
+                    self.prices_array[slice_start_index:none_index],
+                    size=8
+            )
+
+            plot.line(
+                    self.dates_array[slice_start_index:none_index],
+                    self.prices_array[slice_start_index:none_index],
+                    color='navy',
+                    line_width=1
+            )
+
+            slice_start_index = none_index + 1
+
+        plot.circle(
+                self.dates_array[slice_start_index:],
+                self.prices_array[slice_start_index:],
+                size=8
+        )
+
+        plot.line(
+                self.dates_array[slice_start_index:],
+                self.prices_array[slice_start_index:],
+                color='navy',
+                line_width=1
+        )
+
         plot.xaxis[0].formatter = DatetimeTickFormatter(days='%d/%b', months='%b %Y')
         plot.yaxis[0].formatter = NumeralTickFormatter(format='0,0')
 
