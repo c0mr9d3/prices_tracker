@@ -88,6 +88,34 @@ class XlsDB:
         products_db.save(self.db_filename)
         self.refresh_book()
 
+    def set_monitor_in_row(self, category, row):
+        if category not in self.get_categories():
+            return -1
+
+        if type(row) is not int:
+            return -2
+
+        products_db = xl_copy(self.read_stream)
+        read_sheet = self.read_stream.sheet_by_name(category)
+        write_sheet = products_db.get_sheet(category)
+
+        if row < 1 or row > read_sheet.nrows:
+            return -4
+        
+        mon_value = read_sheet.row(row)[0].value
+        if not mon_value:
+            return -5
+        
+        if mon_value == '0':
+            write_sheet.write(row, self.monitor_column, '1')
+        else:
+            write_sheet.write(row, self.monitor_column, '0')
+        
+        products_db.save(self.db_filename)
+        self.refresh_book()
+
+        return 0
+
     def delete_row(self, category, row):
         if category not in self.get_categories():
             return -1

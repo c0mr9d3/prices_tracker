@@ -233,25 +233,32 @@ def main_page():
                 db_object = XLS_DATABASES_OBJECTS_LIST[db_index]
                 return generate_table_page.generate_table(db_object, cat2, 'category2')
         
-        if 'delete_rows' in values_dict and \
+        if ('delete_rows' in values_dict or 'monitor_rows' in values_dict) and \
             'from_category' in values_dict and \
             get_session_variable('selected_db'):
             cat = values_dict['from_category']
+
             if (cat == 'category1' or cat == 'category2') and get_session_variable(cat):
+                from_cat = get_session_variable(cat)
                 db_index = get_session_variable('database_object_index')
                 db_object = XLS_DATABASES_OBJECTS_LIST[db_index]
-                from_cat = get_session_variable(cat)
 
                 try:
-                    delete_rows = list(map(int, values_dict['delete_rows'].split(',')))
-                except ValueError:
-                    pass
+                    if 'delete_rows' in values_dict:
+                        modify_rows = list(map(int, values_dict['delete_rows'].split(',')))
+                        db_operation = db_object.delete_row
+                    else:
+                        modify_rows = list(map(int, values_dict['monitor_rows'].split(',')))
+                        db_operation = db_object.set_monitor_in_row
 
-                for row in delete_rows:
-                    db_object.delete_row(from_cat, row)
+                except ValueError:
+                    return redirect('/')
+
+                for row in modify_rows:
+                    db_operation(from_cat, row)
 
                 db_object.sheet_compress(from_cat)
-                
+
                 return generate_table_page.generate_table(db_object, from_cat, cat)
 
         return redirect('/')

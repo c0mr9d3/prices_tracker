@@ -24,20 +24,24 @@ def generate_table(db, category, category_num):
 
       <table>
         <tr>
-        <th><input onclick="delete_rows(%d);" type="submit" value="Delete"></th>
-        <th><input type="submit" value="Monitor"></th>
+        <th><input onclick="modify_rows(%d, 1);" type="submit" value="Delete"></th>
+        <th><input onclick="modify_rows(%d, 2)" type="submit" value="Monitor"></th>
         <th>Link</th>
         <th>Site</th>
         <th>Product name</th>
         </tr>
-    ''' % (category, nrows)
+    ''' % (category, nrows, nrows)
+
+    all_rows = []
 
     for row in range(1, nrows):
         monitor, link, site, name = db.get_row_info_slice(category, row)
         if monitor.strip() == '1':
             monitor = 'checked'
+            all_rows.append('1')
         else:
             monitor = ''
+            all_rows.append('0')
 
         table_page += \
         '''
@@ -50,6 +54,8 @@ def generate_table(db, category, category_num):
         </tr>
         '''.format(row=row, link=link, site=site, name=name, checked=monitor)
 
+    all_rows = ','.join(all_rows)
+
     table_page += \
         '''
         </table>
@@ -58,34 +64,67 @@ def generate_table(db, category, category_num):
     table_page += \
         '''
         <script>
-            function delete_rows(nrows)
+            function check_changes_in_monitor(row, checked)
             {
-                if ( !Number.isInteger(nrows) )
+                if ( !Number.isInteger(row) || !(typeof checked === "boolean") )
                     return false;
 
-                var rows_del = [];
-                var del_element, rows_joined;
+                var rows = [%s];
+
+                if ( row < 1 || row > rows.length )
+                    return false;
+
+                row--;
+                
+                if ( (!checked && rows[row]) || (checked && !rows[row]) )
+                    return true;
+
+                return false;
+            }
+
+            function modify_rows(nrows, mode)
+            {
+                if ( !Number.isInteger(nrows) || !Number.isInteger(mode) )
+                    return false;
+
+                var prefix_id_name, mod_element, rows_joined, send_arg;
+                var modify_rows = [];
+
+                if ( mode == 1 ) {
+                    prefix_id_name = "del";
+                    send_arg = "delete_rows";
+                } else if ( mode == 2 ) {
+                    prefix_id_name = "monitor";
+                    send_arg = "monitor_rows";
+                } else {
+                    return false;
+                }
 
                 for (var i = 1; i < nrows; i++) {
                     i_str = i.toString();
-                    del_element = document.getElementById("del" + i_str);
+                    mod_element = document.getElementById(prefix_id_name + i_str);
+                    checked = mod_element.checked;
 
-                    if ( del_element.checked )
-                        rows_del.push(i_str);
+                    console.log(check_changes_in_monitor(i, checked));
+                    if ( prefix_id_name === "del" && checked )
+                        modify_rows.push(i_str);
+                    else if ( prefix_id_name === "monitor" && check_changes_in_monitor(i, checked) ) {
+                        modify_rows.push(i_str);
+                    }
                 }
 
-                rows_joined = rows_del.join()
+                rows_joined = modify_rows.join();
                 if ( rows_joined ) {
                     var request_object = new XMLHttpRequest();
                     request_object.open("POST", "/", true);
                     request_object.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-                    request_object.send("delete_rows" + "=" + rows_joined + "&from_category=%s");
+                    request_object.send(send_arg + "=" + rows_joined + "&from_category=%s");
                     location.reload(true);
                 }
                 return true;
             }
         </script>
-        ''' % category_num
+        ''' % (all_rows, category_num)
 
     table_page += \
         '''
