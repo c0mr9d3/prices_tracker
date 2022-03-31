@@ -18,22 +18,6 @@ class XlsDB:
         except (xlrd.biffh.XLRDError, FileNotFoundError): # xlrd.biffh.XLRDError when filesize 0 bytes
             self.read_stream = None
 
-    '''
-    def dump_db(self, category='all'):
-        try:
-            products_db = xlrd.open_workbook(self.db_filename)
-            sheet = products_db.sheet_by_index(0)
-            print(products_db.sheet_names())
-            for col_i in range(sheet.ncols):
-                col = sheet.col_values(col_i)
-                print(col)
-
-            #for cell in col:
-             #   print(cell)
-        except FileNotFoundError:
-            print('File not exist. Need add information about product')
-    '''
-
     def update_product_info(self, category, product_row, product_name, price, date=None):
         if product_row < 1:
             return -1
@@ -104,6 +88,55 @@ class XlsDB:
         products_db.save(self.db_filename)
         self.refresh_book()
 
+    def delete_row(self, category, row):
+        if category not in self.get_categories():
+            return -1
+
+        if type(row) is not int:
+            return -2
+
+        products_db = xl_copy(self.read_stream)
+        read_sheet = self.read_stream.sheet_by_name(category)
+        write_sheet = products_db.get_sheet(category)
+
+        if row < 1 or row >= read_sheet.nrows:
+            return -3
+
+        for col_i in range(read_sheet.ncols):
+            write_sheet.write(row, col_i, '')
+
+        products_db.save(self.db_filename)
+        self.refresh_book()
+
+        return 0
+
+    def sheet_compress(self, category):
+        if category not in self.get_categories():
+            return -1
+
+        products_db = xl_copy(self.read_stream)
+        read_sheet = self.read_stream.sheet_by_name(category)
+        write_sheet = products_db.get_sheet(category)
+        stack_rows = []
+
+        for row_i in range(1, read_sheet.nrows):
+            if read_sheet.row(row_i)[0].value:
+                stack_rows.append(row_i)
+
+        cur_row = 1
+        for row_i in stack_rows:
+            if cur_row != row_i:
+                for col_i, value in enumerate(read_sheet.row(row_i)):
+                    write_sheet.write(cur_row, col_i, value.value)
+                    write_sheet.write(row_i, col_i, '') # delete old row
+
+            cur_row += 1
+
+        products_db.save(self.db_filename)
+        self.refresh_book()
+
+        return 0
+
     def get_monitor_links_from_category(self, category):
         if category not in self.get_categories():
             return -1
@@ -158,6 +191,24 @@ class XlsDB:
             return self.read_stream.sheet_names()
         except AttributeError:
             return []
+
+    def get_row_info_slice(self, category, row_index):
+        if category not in self.get_categories():
+            return None
+
+        read_sheet = self.read_stream.sheet_by_name(category)
+
+        if row_index < 1 or row_index >= read_sheet.nrows:
+            return None
+
+        return tuple([elem.value for elem in read_sheet.row_slice(row_index)[:self.data_offset]])
+
+    def get_category_nrows(self, category):
+        if category not in self.get_categories():
+            return -1
+
+        read_sheet = self.read_stream.sheet_by_name(category)
+        return read_sheet.nrows
 
     def find_product_row(self, category, product_name):
         if not self.read_stream:

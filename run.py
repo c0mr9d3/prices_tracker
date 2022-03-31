@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 import secrets, re, os, tempfile
+import generate_table_page
 from web_app import gen_plotters
-from sites_parser import tracker, database
+from sites_parser.database import XlsDB
+from sites_parser import tracker
 from flask import Flask, render_template, request, redirect, session
 from flask import send_file, abort
 
@@ -211,10 +213,51 @@ def main_page():
                 os.remove(get_session_variable('plot2_file_path'))
                 session['plot2_file_path'] = ''
 
+        if 'show_left_links' in values_dict and \
+            get_session_variable('selected_db') and \
+            get_session_variable('category1'):
+            db_index = get_session_variable('database_object_index')
+            cat1 = get_session_variable('category1')
+
+            if type(db_index) is int and type(cat1) is str:
+                db_object = XLS_DATABASES_OBJECTS_LIST[db_index]
+                return generate_table_page.generate_table(db_object, cat1, 'category1')
+
+        if 'show_right_links' in values_dict and \
+            get_session_variable('selected_db') and \
+            get_session_variable('category2'):
+            db_index = get_session_variable('database_object_index')
+            cat2 = get_session_variable('category2')
+
+            if type(db_index) is int and type(cat2) is str:
+                db_object = XLS_DATABASES_OBJECTS_LIST[db_index]
+                return generate_table_page.generate_table(db_object, cat2, 'category2')
+        
+        if 'delete_rows' in values_dict and \
+            'from_category' in values_dict and \
+            get_session_variable('selected_db'):
+            cat = values_dict['from_category']
+            if (cat == 'category1' or cat == 'category2') and get_session_variable(cat):
+                db_index = get_session_variable('database_object_index')
+                db_object = XLS_DATABASES_OBJECTS_LIST[db_index]
+                from_cat = get_session_variable(cat)
+
+                try:
+                    delete_rows = list(map(int, values_dict['delete_rows'].split(',')))
+                except ValueError:
+                    pass
+
+                for row in delete_rows:
+                    db_object.delete_row(from_cat, row)
+
+                db_object.sheet_compress(from_cat)
+                
+                return generate_table_page.generate_table(db_object, from_cat, cat)
+
         return redirect('/')
 
     elif request.method == 'GET':
-        #print(request.args)
+        #print(dir(request.args))
         if 'selected_db' in request.args.keys() and \
                 check_allowed_symbols(request.args.get('selected_db')):
             selected_db_arg = request.args.get('selected_db')
@@ -230,10 +273,10 @@ def main_page():
             if os.path.isfile(database_filename):
                 db_index = get_session_variable('database_object_index')
                 if db_index == 0 or db_index:
-                    XLS_DATABASES_OBJECTS_LIST[db_index] = database.XlsDB(db_filename=database_filename)
+                    XLS_DATABASES_OBJECTS_LIST[db_index] = XlsDB(db_filename=database_filename)
                 else:
                     session['database_object_index'] = len(XLS_DATABASES_OBJECTS_LIST)
-                    XLS_DATABASES_OBJECTS_LIST.append(database.XlsDB(db_filename=database_filename))
+                    XLS_DATABASES_OBJECTS_LIST.append(XlsDB(db_filename=database_filename))
 
                 session['selected_db'] = selected_db_arg
             else:
