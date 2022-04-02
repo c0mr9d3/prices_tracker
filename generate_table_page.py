@@ -14,12 +14,20 @@ def generate_table(db, category, category_num):
     <!DOCTYPE html>
     <html>
     <style>
+        * {background-color: aliceblue;}
         table, th, td {border:1px solid black;}
+        header {
+            display: flex;
+            align-items: center;
+            height: 40px;
+            background-color: aqua;
+        }
     </style>
 
-    <head>
-    Category's table: %s
-    </head>
+    <header>
+        <input type="button" value="&#8592" onclick="history.back();">
+        Category's table: %s
+    </header>
       <body>
 
       <table>
@@ -89,11 +97,22 @@ def generate_table(db, category, category_num):
 
                 var prefix_id_name, mod_element, rows_joined, send_arg;
                 var modify_rows = [];
+                let answer;
 
                 if ( mode == 1 ) {
+                    answer = confirm("Are you sure want delete rows?");
+                    
+                    if ( !answer )
+                        return false;
+
                     prefix_id_name = "del";
                     send_arg = "delete_rows";
                 } else if ( mode == 2 ) {
+                    answer = confirm("Are you sure want change monitor status for rows?");
+                    
+                    if ( !answer )
+                        return false;
+
                     prefix_id_name = "monitor";
                     send_arg = "monitor_rows";
                 } else {
@@ -105,7 +124,6 @@ def generate_table(db, category, category_num):
                     mod_element = document.getElementById(prefix_id_name + i_str);
                     checked = mod_element.checked;
 
-                    console.log(check_changes_in_monitor(i, checked));
                     if ( prefix_id_name === "del" && checked )
                         modify_rows.push(i_str);
                     else if ( prefix_id_name === "monitor" && check_changes_in_monitor(i, checked) ) {
@@ -114,7 +132,7 @@ def generate_table(db, category, category_num):
                 }
 
                 rows_joined = modify_rows.join();
-                if ( rows_joined ) {
+                if ( answer && rows_joined ) {
                     var request_object = new XMLHttpRequest();
                     request_object.open("POST", "/", true);
                     request_object.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
