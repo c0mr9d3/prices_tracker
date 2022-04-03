@@ -53,6 +53,9 @@ class XlsDB:
         return 0
 
     def create_category_skel(self, category):
+        if category in self.get_categories():
+            return -1
+
         try:
             products_db = xl_copy(self.read_stream)
         except AttributeError: # File not exist or filesize 0 bytes
@@ -174,7 +177,7 @@ class XlsDB:
         except AttributeError:
             return -2
 
-        for row in range(1, read_sheet.nrows):#read_sheet.col_values(self.link_column)[1:]:
+        for row in range(1, read_sheet.nrows):
             if read_sheet.cell(row, self.monitor_column).value == '1':
                 yield { 
                     'link': read_sheet.cell(row, self.link_column).value,
@@ -183,27 +186,30 @@ class XlsDB:
                 }
 
     def get_products_names_from_category(self, category):
-        if not self.read_stream or category not in self.get_categories():
+        if category not in self.get_categories():
             return []
 
         read_sheet = self.read_stream.sheet_by_name(category)
         return read_sheet.col_values(self.product_name_column)[1:]
 
     def get_dates_from_category(self, category):
-        if not self.read_stream or category not in self.get_categories():
+        if category not in self.get_categories():
             return []
 
         read_sheet = self.read_stream.sheet_by_name(category)
         return read_sheet.row_values(0)[self.data_offset:]
 
     def get_date_column(self, category, date):
-        if category.row_slice(0)[-1].value.strip() != date:
+        if category not in self.get_categories():
             return -1
+
+        if category.row_slice(0)[-1].value.strip() != date:
+            return -2
 
         return len(category.row_slice(0))-1
 
     def get_product_prices(self, category, product_name):
-        if not self.read_stream or category not in self.get_categories():
+        if category not in self.get_categories():
             return []
 
         read_sheet = self.read_stream.sheet_by_name(category)
@@ -239,7 +245,7 @@ class XlsDB:
         return read_sheet.nrows
 
     def find_product_row(self, category, product_name):
-        if not self.read_stream:
+        if category not in self.get_categories():
             return -1
 
         category = self.read_stream.sheet_by_name(category)
@@ -251,24 +257,27 @@ class XlsDB:
         return -1
 
     def remove_category(self, category):
-        if self.read_stream:
-            try:
-                new_workbook = xl_copy(self.read_stream)
-                categories = []
+        if category not in self.get_categories():
+            return -1
 
-                for category in new_workbook._Workbook__worksheets:
-                    if category != category.name:
-                        categories.append(category)
+        try:
+            workbook = xl_copy(self.read_stream)
+        except AttributeError: # self.read_stream is None
+            return -2
 
-                if not categories:
-                    os.remove(self.db_filename)
-                else:
-                    new_workbook._Workbook__worksheets = categories
-                    new_workbook.save(self.db_filename)
-                self.refresh_book()
+        categories = []
 
-            except AttributeError: # self.read_stream is None
-                return -1
+        for category_wb in workbook._Workbook__worksheets:
+            if category != category_wb.name:
+                categories.append(category_wb)
+
+        if not categories:
+            os.remove(self.db_filename)
+        else:
+            workbook._Workbook__worksheets = categories
+            workbook.save(self.db_filename)
+
+        self.refresh_book()
 
         return 0
 

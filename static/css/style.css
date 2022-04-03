@@ -7,24 +7,29 @@ html, body {
     height: 100%;
 }
 
+.header {
+    background-color: aqua;
+}
+
+.header_text {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 50px;
+}
+
 .logo img {
+    display: flex;
     float: left;
-    margin-left: 80px;
-    width: 60px;
+    margin-left: 30px;
+    text-align: center;
+    width: 50px;
 }
 
 .wrapper {
     display: flex;
     flex-direction: column;
     height: 100%;
-}
-
-.header {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 70px;
-    background-color: aqua;
 }
 
 .footer {
@@ -47,12 +52,6 @@ html, body {
 }
 
 .plotters {
-    /*
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: center;
-    */
     display: inline flex;
     box-sizing: border-box;
     border-bottom: 2px solid black;
