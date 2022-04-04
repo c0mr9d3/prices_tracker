@@ -37,7 +37,7 @@ class XlsDB:
 
         sheet_read = self.read_stream.sheet_by_name(category)
         sheet_write = products_db.get_sheet(category)
-        product_col_date = self.get_date_column(sheet_read, date)
+        product_col_date = self.get_date_column(category, date)
 
         if product_col_date < 0:
             product_col_date = sheet_read.ncols  # cells start with 0
@@ -203,10 +203,12 @@ class XlsDB:
         if category not in self.get_categories():
             return -1
 
-        if category.row_slice(0)[-1].value.strip() != date:
-            return -2
+        sheet_read = self.read_stream.sheet_by_name(category)
 
-        return len(category.row_slice(0))-1
+        if sheet_read.row_slice(0)[-1].value.strip() != date:
+            return sheet_read.ncols
+
+        return sheet_read.ncols - 1 # last column contain the date
 
     def get_product_prices(self, category, product_name):
         if category not in self.get_categories():
