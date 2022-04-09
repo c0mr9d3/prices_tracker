@@ -18,11 +18,15 @@ class XlsDB:
         except (xlrd.biffh.XLRDError, FileNotFoundError): # xlrd.biffh.XLRDError when filesize 0 bytes
             self.read_stream = None
 
+    def update_today(self):
+        self.today = time.strftime('%d.%m.%Y')
+
     def update_product_info(self, category, product_row, product_name, price, date=None):
         if product_row < 1:
             return -1
 
         if not date:
+            self.update_today()
             date = self.today
 
         try:

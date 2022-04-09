@@ -65,7 +65,7 @@ def main_page():
     
     if request.method == 'POST':
         values_dict = request.values.to_dict()
-        print(request.values.to_dict())
+        #print(request.values.to_dict())
 
         if 'db_name' in values_dict and \
                 check_allowed_symbols(values_dict['db_name']):
