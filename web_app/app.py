@@ -1,17 +1,11 @@
 #!/usr/bin/env python3
-import secrets, re, os, tempfile
-import generate_table_page
-from web_app import gen_plotters
-from sites_parser.database import XlsDB
-from sites_parser import tracker
+import secrets, re, sys, os, tempfile
+import generate_table_page, gen_plotters
 from flask import Flask, render_template, request, redirect, session
 from flask import send_file, abort
 
 app = Flask(__name__)
 app.secret_key = secrets.token_hex(16)
-
-CURRENT_DIR = os.getcwd()
-XLS_DATABASES_OBJECTS_LIST = []
 
 def check_allowed_symbols(name):
     if name and len(name) <= 40:
@@ -31,7 +25,7 @@ def read_tmp_file(path):
     return ''
 
 def show_databases():
-    databases_dir = os.path.join(CURRENT_DIR, 'databases')
+    databases_dir = os.path.join(ROOT_APP_DIR, 'databases')
     db_list = []
 
     if os.path.isdir(databases_dir):
@@ -46,7 +40,7 @@ def download(filename):
     if type(filename) is not str:
         abort(404)
 
-    file_path = os.path.join(CURRENT_DIR, 'databases', filename)
+    file_path = os.path.join(ROOT_APP_DIR, 'databases', filename)
     if os.path.isfile(file_path):
         return send_file(file_path, as_attachment=True)
 
@@ -59,7 +53,7 @@ def main_page():
     monitor_products_list_left = []
     monitor_products_list_right = []
     databases_list = show_databases()
-    database_filename = os.path.join(CURRENT_DIR, 'databases', '%s.xls')
+    database_filename = os.path.join(ROOT_APP_DIR, 'databases', '%s.xls')
     get_session_variable = lambda session_variable: \
             session[session_variable] if session_variable in session.keys() else ''
     
@@ -122,7 +116,7 @@ def main_page():
 
             try:
                 target_site = find_res[0]
-                if target_site in tracker.SUPPORTED_SITES:
+                if target_site in shops_parser.SUPPORTED_SITES:
                     if 'add_link_left_cat' in values_dict.keys():
                         target_cat = get_session_variable('category1')
                     elif 'add_link_right_cat' in values_dict.keys():
@@ -158,7 +152,7 @@ def main_page():
                     products = XLS_DATABASES_OBJECTS_LIST[db_index].get_monitor_links_from_category(target_cat)
                     for product_dict_info in products:
                         try:
-                            product_name, product_price = tracker.SHOPS_OBJECTS_DICTIONARY[product_dict_info['site']]().get_product_info(product_dict_info['link'])
+                            product_name, product_price = shops_parser.SHOPS_OBJECTS_DICTIONARY[product_dict_info['site']]().get_product_info(product_dict_info['link'])
                             XLS_DATABASES_OBJECTS_LIST[db_index].update_product_info(target_cat, product_dict_info['row'], product_name, product_price)
                         except (KeyError, TypeError): # TypeError if get_product_info return < 0
                             continue
@@ -344,14 +338,34 @@ def main_page():
             selected_cat2=get_session_variable('category2'), \
             databases_list=databases_list, \
             categories_list=categories_list, \
-            supported_sites=tracker.SUPPORTED_SITES, \
+            supported_sites=shops_parser.SUPPORTED_SITES, \
             monitor_products_list_left=monitor_products_list_left, \
             monitor_products_list_right=monitor_products_list_right, \
             plotter1_json=read_tmp_file(get_session_variable('plot1_file_path')), \
             plotter2_json=read_tmp_file(get_session_variable('plot2_file_path'))
     )
 
+def main_web_app(root_directory, databases_directory):
+    global ROOT_APP_DIR, XLS_DATABASES_OBJECTS_LIST, XlsDB, shops_parser
+
+    if type(root_directory) is not str or not os.path.isdir(root_directory):
+        return -1
+
+    if type(databases_directory) is not str or not os.path.isdir(databases_directory):
+        return -2
+
+    ROOT_APP_DIR = root_directory
+    XLS_DATABASES_OBJECTS_LIST = []
+    sys.path.append(ROOT_APP_DIR)
+
+    from products_info.database_xls import XlsDB
+    from products_info import shops_parser
+    app.run(host='0.0.0.0', debug=True)
+
+
 if __name__ == '__main__':
-    if not os.path.isdir('databases'):
-        os.mkdir('databases')
-    app.run(debug=True, host='0.0.0.0')
+    main_web_app('/home/archi/prices_tracker', '/home/archi/prices_tracker/databases')
+
+    #if not os.path.isdir('databases'):
+    #    os.mkdir('databases')
+    #app.run(debug=True, host='0.0.0.0')
