@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 import secrets, re, sys, os, tempfile
-import generate_table_page, gen_plotters
 from flask import Flask, render_template, request, redirect, session
 from flask import send_file, abort
 
@@ -71,7 +70,7 @@ def main_page():
                 check_allowed_symbols(values_dict['remove_db']) and \
                 get_session_variable('selected_db'):
             try:
-                del session['selected_db']
+                session['selected_db'] = ''
                 db_index = get_session_variable('database_object_index')
                 if type(db_index) is int:
                     XLS_DATABASES_OBJECTS_LIST[db_index] = None
@@ -108,6 +107,11 @@ def main_page():
 
             if rem_cat_name == get_session_variable('category2'):
                 session['category2'] = ''
+
+            if not XLS_DATABASES_OBJECTS_LIST[db_index].get_categories():
+                session['category1'] = ''
+                session['category2'] = ''
+                session['selected_db'] = ''
 
         if 'link_name' in values_dict and \
                 get_session_variable('selected_db'):
@@ -347,6 +351,7 @@ def main_page():
 
 def main_web_app(root_directory, databases_directory):
     global ROOT_APP_DIR, XLS_DATABASES_OBJECTS_LIST, XlsDB, shops_parser
+    global generate_table_page, gen_plotters
 
     if type(root_directory) is not str or not os.path.isdir(root_directory):
         return -1
@@ -357,7 +362,9 @@ def main_web_app(root_directory, databases_directory):
     ROOT_APP_DIR = root_directory
     XLS_DATABASES_OBJECTS_LIST = []
     sys.path.append(ROOT_APP_DIR)
+    sys.path.append(os.path.join(ROOT_APP_DIR, 'web_app'))
 
+    import generate_table_page, gen_plotters
     from products_info.database_xls import XlsDB
     from products_info import shops_parser
     app.run(host='0.0.0.0', debug=True)
