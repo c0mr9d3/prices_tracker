@@ -9,10 +9,7 @@ def main():
     (options, args) = parser.parse_args()
 
     if options.webapp:
-        app.main_web_app(
-                root_directory=os.getcwd(),
-                databases_directory=os.path.join(os.getcwd(), 'databases')
-        )
+        app.app.run(host='0.0.0.0')
 
 if __name__ == '__main__':
     main()

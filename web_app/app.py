@@ -3,7 +3,35 @@ import secrets, re, sys, os, tempfile
 from flask import Flask, render_template, request, redirect, session
 from flask import send_file, abort
 
-app = Flask(__name__)
+class Flask_app(Flask):
+    def __init__(self, app_name, root_directory=None):
+        global ROOT_APP_DIR, XLS_DATABASES_OBJECTS_LIST, XlsDB, shops_parser
+        global generate_table_page, gen_plotters
+
+        if type(root_directory) is not str:
+            root_directory = os.getcwd()
+        
+        root_directory = '..'
+        databases_directory = os.path.join(root_directory, 'databases')
+
+        if not os.path.isdir(root_directory):
+            print('Root directory not found')
+            sys.exit(-1)
+
+        if not os.path.isdir(databases_directory):
+            os.mkdir(databases_directory)
+
+        ROOT_APP_DIR = root_directory
+        XLS_DATABASES_OBJECTS_LIST = []
+        sys.path.append(ROOT_APP_DIR)
+        sys.path.append(os.path.join(ROOT_APP_DIR, 'web_app'))
+
+        import generate_table_page, gen_plotters
+        from products_info.database_xls import XlsDB
+        from products_info import shops_parser
+        super().__init__(app_name)
+
+app = Flask_app(__name__)
 app.secret_key = secrets.token_hex(16)
 
 def check_allowed_symbols(name):
@@ -62,6 +90,10 @@ def main_page():
 
         if 'db_name' in values_dict and \
                 check_allowed_symbols(values_dict['db_name']):
+
+            if not os.path.isdir(os.path.join(ROOT_APP_DIR, 'databases')):
+                os.mkdir(os.path.join(ROOT_APP_DIR, 'databases'))
+
             database_filename = database_filename % values_dict['db_name']
             if not os.path.isfile(database_filename):
                 open(database_filename, 'w').close()
@@ -349,30 +381,5 @@ def main_page():
             plotter2_json=read_tmp_file(get_session_variable('plot2_file_path'))
     )
 
-def main_web_app(root_directory, databases_directory):
-    global ROOT_APP_DIR, XLS_DATABASES_OBJECTS_LIST, XlsDB, shops_parser
-    global generate_table_page, gen_plotters
-
-    if type(root_directory) is not str or not os.path.isdir(root_directory):
-        return -1
-
-    if type(databases_directory) is not str or not os.path.isdir(databases_directory):
-        return -2
-
-    ROOT_APP_DIR = root_directory
-    XLS_DATABASES_OBJECTS_LIST = []
-    sys.path.append(ROOT_APP_DIR)
-    sys.path.append(os.path.join(ROOT_APP_DIR, 'web_app'))
-
-    import generate_table_page, gen_plotters
-    from products_info.database_xls import XlsDB
-    from products_info import shops_parser
-    app.run(host='0.0.0.0', debug=True)
-
-
-if __name__ == '__main__':
-    main_web_app('/home/archi/prices_tracker', '/home/archi/prices_tracker/databases')
-
-    #if not os.path.isdir('databases'):
-    #    os.mkdir('databases')
+#if __name__ == '__main__':
     #app.run(debug=True, host='0.0.0.0')
