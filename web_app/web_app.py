@@ -8,9 +8,6 @@ class Flask_app(Flask):
         global ROOT_APP_DIR, XLS_DATABASES_OBJECTS_LIST, XlsDB, shops_parser
         global generate_table_page, gen_plotters
 
-        if type(root_directory) is not str:
-            root_directory = os.getcwd()
-        
         root_directory = '..'
         databases_directory = os.path.join(root_directory, 'databases')
 
@@ -25,7 +22,6 @@ class Flask_app(Flask):
         XLS_DATABASES_OBJECTS_LIST = []
         sys.path.append(ROOT_APP_DIR)
         sys.path.append(os.path.join(ROOT_APP_DIR, 'web_app'))
-
         import generate_table_page, gen_plotters
         from products_info.database_xls import XlsDB
         from products_info import shops_parser
@@ -83,6 +79,8 @@ def main_page():
     database_filename = os.path.join(ROOT_APP_DIR, 'databases', '%s.xls')
     get_session_variable = lambda session_variable: \
             session[session_variable] if session_variable in session.keys() else ''
+
+    print('in begin:', XLS_DATABASES_OBJECTS_LIST)
     
     if request.method == 'POST':
         values_dict = request.values.to_dict()
@@ -309,11 +307,13 @@ def main_page():
             database_filename = database_filename % selected_db_arg
             if os.path.isfile(database_filename):
                 db_index = get_session_variable('database_object_index')
-                if db_index == 0 or db_index:
+                if type(db_index) is int:
                     XLS_DATABASES_OBJECTS_LIST[db_index] = XlsDB(db_filename=database_filename)
                 else:
                     session['database_object_index'] = len(XLS_DATABASES_OBJECTS_LIST)
+                    print('append object', database_filename)
                     XLS_DATABASES_OBJECTS_LIST.append(XlsDB(db_filename=database_filename))
+                    print(XLS_DATABASES_OBJECTS_LIST)
 
                 session['selected_db'] = selected_db_arg
             else:
@@ -382,4 +382,4 @@ def main_page():
     )
 
 #if __name__ == '__main__':
-    #app.run(debug=True, host='0.0.0.0')
+#    app.run(debug=True, host='0.0.0.0')

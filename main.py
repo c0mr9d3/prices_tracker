@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
-import os
+import os, sys
 from optparse import OptionParser
-from web_app import app
 
 def main():
     parser = OptionParser()
@@ -9,7 +8,10 @@ def main():
     (options, args) = parser.parse_args()
 
     if options.webapp:
-        app.app.run(host='0.0.0.0')
+        os.chdir('web_app')
+        sys.path.append(os.getcwd())
+        from web_app import app
+        app.run(host='0.0.0.0')
 
 if __name__ == '__main__':
     main()
