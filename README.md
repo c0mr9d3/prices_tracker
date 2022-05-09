@@ -30,3 +30,21 @@ Main page: ![main_page](https://user-images.githubusercontent.com/33072543/16271
   <li>Python 3.6+</li>
   <li>Docker (optional)</li>
 </ol>
+
+### Installation:
+```bash
+$ pip install -r requirements.txt
+```
+or
+```bash
+$ pip3 install -r requirements.txt
+```
+### Start web application:
+```bash
+$ python3 main.py -W
+```
+or
+```bash
+$ chmod +x main.py
+$ ./main.py -W
+```
