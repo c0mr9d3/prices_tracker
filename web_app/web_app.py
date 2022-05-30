@@ -8,15 +8,20 @@ class Flask_app(Flask):
         global ROOT_APP_DIR, XLS_DATABASES_OBJECTS_LIST, XlsDB, shops_parser
         global generate_table_page, gen_plotters
 
-        root_directory = '..'
+        if type(root_directory) is not str:
+            root_directory = '..'
+
         databases_directory = os.path.join(root_directory, 'databases')
 
         if not os.path.isdir(root_directory):
             print('Root directory not found')
-            sys.exit(-1)
+            os._exit(-1)
 
         if not os.path.isdir(databases_directory):
-            os.mkdir(databases_directory)
+            try:
+                os.mkdir(databases_directory)
+            except PermissionError:
+                os._exit(-2)
 
         ROOT_APP_DIR = root_directory
         XLS_DATABASES_OBJECTS_LIST = []
@@ -79,8 +84,6 @@ def main_page():
     database_filename = os.path.join(ROOT_APP_DIR, 'databases', '%s.xls')
     get_session_variable = lambda session_variable: \
             session[session_variable] if session_variable in session.keys() else ''
-
-    print('in begin:', XLS_DATABASES_OBJECTS_LIST)
     
     if request.method == 'POST':
         values_dict = request.values.to_dict()
@@ -311,9 +314,7 @@ def main_page():
                     XLS_DATABASES_OBJECTS_LIST[db_index] = XlsDB(db_filename=database_filename)
                 else:
                     session['database_object_index'] = len(XLS_DATABASES_OBJECTS_LIST)
-                    print('append object', database_filename)
                     XLS_DATABASES_OBJECTS_LIST.append(XlsDB(db_filename=database_filename))
-                    print(XLS_DATABASES_OBJECTS_LIST)
 
                 session['selected_db'] = selected_db_arg
             else:
