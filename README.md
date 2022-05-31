@@ -39,12 +39,14 @@ $ pip install -r requirements.txt
 ### Start web application (3 ways):
 <summary>First way (use embedded in flask web server):</summary>
 
+Run:
 ```bash
 $ python3 main.py -W
 ```
 
 <summary>Second way (use nginx and uwsgi):</summary>
 
+Prepare:
 ```bash
 $ sudo apt install nginx
 $ sudo cp configs/nginx/nginx.conf /etc/nginx/
@@ -52,6 +54,10 @@ $ sudo mkdir -p /etc/nginx/sites-available && sudo mkdir -p /etc/nginx/sites-ena
 $ sudo cp -r configs/nginx/sites-available /etc/nginx/sites-available
 $ sudo ln -s /etc/nginx/sites-enabled/web_app.conf /etc/nginx/sites-available/web_app.conf
 $ sudo rm -f /etc/nginx/sites-enabled/default && sudo rm -f /etc/nginx/sites-available/default
+```
+
+Run:
+```bash
 $ sudo systemctl start nginx
 $ cd web_app
 $ uwsgi --ini uwsgi.ini &
@@ -59,5 +65,24 @@ $ uwsgi --ini uwsgi.ini &
 
 <summary>Third way (use Docker):</summary>
 
+Prepare:
 ```bash
+$ mkdir databases
+$ docker build -t web_application_image .
+$ docker volume create web_app_databases
+```
+
+Run:
+```bash
+$ docker run -d -e TZ=$(timedatectl | grep "Time zone" | xargs | cut -d" " -f 3) --rm --name prices_tracker_app -p 80:80 -v web_app_databases:/<path_to_program_directory>/prices_tracker/databases web_application_image
+```
+
+Stop:
+```bash
+$ docker stop prices_tracker_app
+```
+
+Delete docker volume:
+```bash
+$ docker volume rm web_app_databasses
 ```
