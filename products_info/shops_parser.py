@@ -58,14 +58,6 @@ class Citilink:
 
                 break
 
-        #for class_name in self.class_product_price:
-        #    try:
-        #        price = soup.find_all('span', class_=class_name)[0].text.strip()
-        #        price = ''.join(re.findall('\d+', price))
-        #        break
-        #    except IndexError:
-        #        continue
-
         return (name, price)
 
 class Ozon(Citilink):

@@ -382,5 +382,3 @@ def main_page():
             plotter2_json=read_tmp_file(get_session_variable('plot2_file_path'))
     )
 
-#if __name__ == '__main__':
-#    app.run(debug=True, host='0.0.0.0')
