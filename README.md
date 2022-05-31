@@ -26,8 +26,8 @@ Main page: ![main_page](https://user-images.githubusercontent.com/33072543/16271
 
 ### Dependencies:
 <ol>
-  <li>Web server nginx</li>
   <li>Python 3.6+</li>
+  <li>Web server nginx (optional)</li>
   <li>Docker (optional)</li>
 </ol>
 
@@ -35,16 +35,29 @@ Main page: ![main_page](https://user-images.githubusercontent.com/33072543/16271
 ```bash
 $ pip install -r requirements.txt
 ```
-or
-```bash
-$ pip3 install -r requirements.txt
-```
-### Start web application:
+
+### Start web application (3 ways):
+<summary>First way (use embedded in flask web server):</summary>
+
 ```bash
 $ python3 main.py -W
 ```
-or
+
+<summary>Second way (use nginx and uwsgi):</summary>
+
 ```bash
-$ chmod +x main.py
-$ ./main.py -W
+$ sudo apt install nginx
+$ sudo cp configs/nginx/nginx.conf /etc/nginx/
+$ sudo mkdir -p /etc/nginx/sites-available && sudo mkdir -p /etc/nginx/sites-enabled
+$ sudo cp -r configs/nginx/sites-available /etc/nginx/sites-available
+$ sudo ln -s /etc/nginx/sites-enabled/web_app.conf /etc/nginx/sites-available/web_app.conf
+$ sudo rm -f /etc/nginx/sites-enabled/default && sudo rm -f /etc/nginx/sites-available/default
+$ sudo systemctl start nginx
+$ cd web_app
+$ uwsgi --ini uwsgi.ini &
+```
+
+<summary>Third way (use Docker):</summary>
+
+```bash
 ```
